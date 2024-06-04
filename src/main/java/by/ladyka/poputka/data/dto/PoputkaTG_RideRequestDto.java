@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PoputkaTG_RideRequestDto {
+public class PoputkaTG_RideRequestDto extends PoputkaTG_RequestDto {
     @JsonProperty("ride_id")
     private int rideId;
     @JsonProperty("father_ride_id")
@@ -31,5 +31,4 @@ public class PoputkaTG_RideRequestDto {
     private byte timeStart;
     @JsonProperty("user_nickname")
     private String userNickname;
-    private String today;
 }

@@ -1,5 +1,6 @@
 package by.ladyka.poputka.controllers;
 
+import by.ladyka.poputka.data.dto.PoputkaTG_RideRequestDeleteDto;
 import by.ladyka.poputka.data.dto.PoputkaTG_RideRequestDto;
 import by.ladyka.poputka.data.entity.PoputkaTG_Ride;
 import by.ladyka.poputka.data.repository.PoputkaTG_RideRepository;
@@ -32,7 +33,21 @@ public class PoputkaTGApi {
         if (Objects.equals(hash(ride.getToday()), poputkatg)) {
             return Map.of("id", poputkaTGRideRepository.save(toEntity(ride)).getRideId());
         } else {
-            log.warn("REQUEST CHECK FAIL : " + ride.getToday() + " " + poputkatg);
+            log.warn("REQUEST CHECK FAIL : %s %s".formatted(ride.getToday(), poputkatg));
+            return Map.of("success", false);
+        }
+    }
+
+    @PostMapping("/ride/delete")
+    public @ResponseBody Map<String, Object> newTrip(
+            @RequestHeader(value = "poputkatg") String poputkatg,
+            @RequestBody PoputkaTG_RideRequestDeleteDto rideForDelete
+                                                    ) {
+        if (Objects.equals(hash(rideForDelete.getToday()), poputkatg)) {
+            poputkaTGRideRepository.deleteById(rideForDelete.getRideId());
+            return Map.of("success", true);
+        } else {
+            log.warn("REQUEST CHECK FAIL : %s %s".formatted(rideForDelete.getToday(), poputkatg));
             return Map.of("success", false);
         }
     }
