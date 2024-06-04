@@ -1,0 +1,62 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2024-06-04
+      author: Andrei Ladyka
+      changes:
+        - createTable:
+            tableName: poputka_tg_rides
+            columns:
+              - column:
+                  name: ride_id
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: father_ride_id
+                  type: int
+              - column:
+                  name: from_place_now
+                  type: varchar(255)
+              - column:
+                  name: to_place_now
+                  type: varchar(255)
+              - column:
+                  name: day
+                  type: int
+              - column:
+                  name: month_name
+                  type: varchar(10)
+              - column:
+                  name: car
+                  type: text
+              - column:
+                  name: driver_wishes
+                  type: text
+              - column:
+                  name: price
+                  type: smallint
+              - column:
+                  name: valuta_short
+                  type: varchar(5)
+              - column:
+                  name: time_start
+                  type: smallint
+              - column:
+                  name: user_nickname
+                  type: varchar(50)
+              - column:
+                  name: created_by
+                  type: varchar(50)
+              - column:
+                  name: created_datetime
+                  type: int
+              - column:
+                  name: modified_by
+                  type: varchar(50)
+              - column:
+                  name: modified_datetime
+                  type: int
+              - column:
+                  name: version
+                  type: smallint

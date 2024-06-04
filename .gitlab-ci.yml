@@ -1,0 +1,4 @@
+include:
+- project: ladyka/gitlab-common
+  ref: lgb-build-deploy
+  file: .gitlab-ci-service.yml

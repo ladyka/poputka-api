@@ -1,0 +1,8 @@
+server:
+  port: 28006
+spring:
+  datasource:
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/postgres
+debug: true
