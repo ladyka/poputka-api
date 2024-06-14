@@ -1,6 +1,6 @@
 databaseChangeLog:
 - changeSet:
-    id: 2024-06-05
+    id: 2024-06-05-final
     author: Andrei Ladyka
     changes:
     - sql: DROP TABLE IF EXISTS poputka_tg_rides;
@@ -63,7 +63,7 @@ databaseChangeLog:
             type: smallint
 
 - changeSet:
-    id: 2024-06-11-users-1
+    id: 2024-06-11-users-final
     author: Andrei Ladyka
     changes:
     - sql: DROP TABLE IF EXISTS users;
@@ -122,7 +122,7 @@ databaseChangeLog:
             type: smallint
 
 - changeSet:
-    id: 2024-06-14-trips-2
+    id: 2024-06-14-trips-final
     author: Andrei Ladyka
     changes:
     - sql: DROP TABLE IF EXISTS trips;
@@ -159,11 +159,6 @@ databaseChangeLog:
               nullable: false
         - column:
             name: currency
-            type: VARCHAR(255)
-            constraints:
-              nullable: false
-        - column:
-            name: car
             type: VARCHAR(255)
             constraints:
               nullable: false

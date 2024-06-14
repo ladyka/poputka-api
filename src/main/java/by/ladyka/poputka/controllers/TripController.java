@@ -9,12 +9,16 @@ import by.ladyka.poputka.data.repository.PoputkaUserRepository;
 import by.ladyka.poputka.data.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @Slf4j
 @RestController
@@ -39,5 +43,14 @@ public class TripController {
         tripMapper.toEntity(dto, trip);
         TripEntity entity = tripRepository.save(trip);
         return tripMapper.toDto(entity);
+    }
+
+    @GetMapping("/{id}")
+    public TripDto findById(@PathVariable("id") Long id) {
+        return tripRepository
+                .findById(id)
+                .filter(tripEntity -> Instant.now().minus(7, ChronoUnit.DAYS).isBefore(tripEntity.getStartTime()))
+                .map(tripMapper::toDto)
+                .orElseThrow();
     }
 }

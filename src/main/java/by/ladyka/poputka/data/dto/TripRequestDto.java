@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -11,7 +12,7 @@ public class TripRequestDto {
     private Long id;
     private String from;
     private String to;
-    //    private Instant start;
+    private Instant start;
     private BigDecimal price;
     private String currency;
     private String car;

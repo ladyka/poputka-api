@@ -28,7 +28,6 @@ public class TripEntity extends Auditable {
     private Long start;
     private BigDecimal price;
     private String currency;
-    private String car;
     @Lob
     private String description;
     private byte passengers;
