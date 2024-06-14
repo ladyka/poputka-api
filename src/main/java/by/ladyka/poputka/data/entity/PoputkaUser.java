@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +27,7 @@ public class PoputkaUser extends Auditable implements UserDetails {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private byte id;
 
     private String username;
     private String password;
@@ -50,4 +51,7 @@ public class PoputkaUser extends Auditable implements UserDetails {
     //    public void setEmail(String email) {
     //        setUsername(email);
     //    }
+
+    @OneToMany
+    private List<TripEntity> trips = List.of();
 }
