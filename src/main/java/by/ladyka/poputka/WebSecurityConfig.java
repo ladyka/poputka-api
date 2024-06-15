@@ -35,6 +35,8 @@ public class WebSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
                                 .requestMatchers(
+                                        "/api/user/singup",
+                                        "/api/user/info",
                                         "/api/poputkatg/",
                                         "/api/search/",
                                         "/actuator", "/actuator/"

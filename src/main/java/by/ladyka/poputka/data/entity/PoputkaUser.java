@@ -44,13 +44,13 @@ public class PoputkaUser extends Auditable implements UserDetails {
         return List.of((GrantedAuthority) () -> "USER");
     }
 
-    //    public String getEmail() {
-    //        return getUsername();
-    //    }
-    //
-    //    public void setEmail(String email) {
-    //        setUsername(email);
-    //    }
+    public String getEmail() {
+        return getUsername();
+    }
+
+    public void setEmail(String email) {
+        setUsername(email);
+    }
 
     @OneToMany
     private List<TripEntity> trips = List.of();
