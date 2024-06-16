@@ -37,7 +37,7 @@ public class UserController {
     @GetMapping("/info")
     public UserInfoDto userInfoDto(Principal principal) {
         if (Objects.isNull(principal)) {
-            return null;
+            return new UserInfoDto();
         }
         PoputkaUser user = poputkaUserRepository.findByUsername(principal.getName()).orElseThrow();
         UserInfoDto userInfoDto = new UserInfoDto();

@@ -3,12 +3,16 @@ package by.ladyka.poputka.controllers;
 import by.ladyka.poputka.TripMapper;
 import by.ladyka.poputka.data.dto.TripDto;
 import by.ladyka.poputka.data.dto.TripRequestDto;
+import by.ladyka.poputka.data.dto.TripSearchRequest;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.entity.TripEntity;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
 import by.ladyka.poputka.data.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,6 +47,14 @@ public class TripController {
         tripMapper.toEntity(dto, trip);
         TripEntity entity = tripRepository.save(trip);
         return tripMapper.toDto(entity);
+    }
+
+    @PostMapping("/search")
+    public Page<TripDto> findTrips(@RequestBody TripSearchRequest tripSearchRequest) {
+        return tripRepository.findAllByPlaceFromAndPlaceTo(tripSearchRequest.getPlaceFrom(), tripSearchRequest.getPlaceTo(),
+                        Pageable.unpaged(
+                                Sort.by("start")))
+                .map(tripMapper::toDto);
     }
 
     @GetMapping("/{id}")
