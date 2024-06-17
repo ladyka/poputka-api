@@ -1,4 +1,4 @@
-package by.ladyka.poputka;
+package by.ladyka.poputka.service.mapper;
 
 import by.ladyka.poputka.data.dto.TripDto;
 import by.ladyka.poputka.data.dto.TripRequestDto;

@@ -1,5 +1,6 @@
 package by.ladyka.poputka;
 
+import by.ladyka.poputka.controllers.TripController;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -35,11 +36,14 @@ public class WebSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
                                 .requestMatchers(
+                                        TripController.API_TRIP,
+                                        TripController.API_TRIP + "/**",
                                         "/api/user/singup",
                                         "/api/user/info",
                                         "/api/poputkatg/",
                                         "/api/search/",
-                                        "/actuator", "/actuator/"
+                                        "/actuator",
+                                        "/actuator/"
                                                 ).permitAll()
                                 .anyRequest().authenticated()
                                       )

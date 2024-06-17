@@ -4,6 +4,7 @@ import by.ladyka.poputka.data.dto.SingUpRequest;
 import by.ladyka.poputka.data.dto.UserInfoDto;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
+import by.ladyka.poputka.service.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,7 @@ import java.util.Objects;
 public class UserController {
     private final PoputkaUserRepository poputkaUserRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     @PostMapping("/singup")
     public Map<String, Boolean> createUser(@RequestBody SingUpRequest request) {
@@ -40,15 +42,17 @@ public class UserController {
             return new UserInfoDto();
         }
         PoputkaUser user = poputkaUserRepository.findByUsername(principal.getName()).orElseThrow();
-        UserInfoDto userInfoDto = new UserInfoDto();
-        userInfoDto.setEmail(user.getEmail());
-        userInfoDto.setName(user.getName());
-        userInfoDto.setSurname(user.getSurname());
-        userInfoDto.setBirthday(user.getBirthday());
-        userInfoDto.setMusic(user.getMusic());
-        userInfoDto.setBusinessActivity(user.getBusinessActivity());
-        userInfoDto.setDescription(user.getDescription());
-        userInfoDto.setCar(user.getCar());
-        return userInfoDto;
+        return userMapper.toDto(user);
+    }
+
+    @PostMapping("/update")
+    public UserInfoDto userInfoDto(Principal principal, @RequestBody UserInfoDto dto) {
+        if (Objects.isNull(principal)) {
+            return new UserInfoDto();
+        }
+        PoputkaUser entity = poputkaUserRepository.findByUsername(principal.getName()).orElseThrow();
+        userMapper.updateEntity(dto, entity);
+        PoputkaUser save = poputkaUserRepository.save(entity);
+        return userMapper.toDto(save);
     }
 }
