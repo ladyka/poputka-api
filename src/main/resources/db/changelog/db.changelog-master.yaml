@@ -206,7 +206,8 @@ databaseChangeLog:
         columns:
         - column:
             name: telegram_id
-            type: VARCHAR(255)
+            type: BIGINT
+            defaultValueNumeric: 0
         - column:
             name: telegram_username
             type: VARCHAR(255)
