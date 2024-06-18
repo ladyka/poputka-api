@@ -38,6 +38,8 @@ public class PoputkaUser extends Auditable implements UserDetails {
     private String businessActivity;
     private String description;
     private String car;
+    private long telegramId;
+    private String telegramUsername;
 
     @Override
     public Collection<GrantedAuthority> getAuthorities() {

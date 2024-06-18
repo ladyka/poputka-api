@@ -19,4 +19,5 @@ public class TripDto {
     private String description;
     private byte passengers;
     private String owner;
+    private String ownerTelegramUsername;
 }

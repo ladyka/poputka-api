@@ -1,6 +1,7 @@
 package by.ladyka.poputka.service.mapper;
 
 import by.ladyka.poputka.data.dto.UserInfoDto;
+import by.ladyka.poputka.data.dto.UserInfoSaveRequestDto;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +18,12 @@ public class UserMapper {
         userInfoDto.setBusinessActivity(user.getBusinessActivity());
         userInfoDto.setDescription(user.getDescription());
         userInfoDto.setCar(user.getCar());
+        userInfoDto.setTelegramId(user.getTelegramId());
+        userInfoDto.setTelegramUsername(user.getTelegramUsername());
         return userInfoDto;
     }
 
-    public PoputkaUser updateEntity(UserInfoDto dto, PoputkaUser entity) {
+    public PoputkaUser updateEntity(UserInfoSaveRequestDto dto, PoputkaUser entity) {
         entity.setName(dto.getName());
         entity.setSurname(dto.getSurname());
         entity.setBirthday(dto.getBirthday());

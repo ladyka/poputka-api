@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface PoputkaUserRepository extends JpaRepository<PoputkaUser, Byte> {
     Optional<PoputkaUser> findByUsername(String username);
+
+    Optional<PoputkaUser> findByTelegramId(Long tgId);
 }

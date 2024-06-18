@@ -7,8 +7,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class UserInfoDto {
-    private String email;
+public class UserInfoSaveRequestDto {
     private String name;
     private String surname;
     private LocalDate birthday;
@@ -16,6 +15,4 @@ public class UserInfoDto {
     private String businessActivity;
     private String description;
     private String car;
-    private long telegramId;
-    private String telegramUsername;
 }

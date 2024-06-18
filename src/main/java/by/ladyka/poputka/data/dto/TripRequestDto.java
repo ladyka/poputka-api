@@ -18,5 +18,4 @@ public class TripRequestDto {
     private String car;
     private String description;
     private byte passengers;
-    private String driverName;
 }

@@ -196,3 +196,17 @@ databaseChangeLog:
             type: smallint
             constraints:
               nullable: false
+
+- changeSet:
+    id: 2024-06-17-users-addTelegramColumns
+    author: Andrei Ladyka
+    changes:
+    - addColumn:
+        tableName: users
+        columns:
+        - column:
+            name: telegram_id
+            type: VARCHAR(255)
+        - column:
+            name: telegram_username
+            type: VARCHAR(255)

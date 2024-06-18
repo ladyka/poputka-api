@@ -1,8 +1,10 @@
 package by.ladyka.poputka;
 
+import by.ladyka.poputka.controllers.TelegramController;
 import by.ladyka.poputka.controllers.TripController;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -24,6 +26,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -38,8 +41,10 @@ public class WebSecurityConfig {
                                 .requestMatchers(
                                         TripController.API_TRIP,
                                         TripController.API_TRIP + "/**",
+                                        TelegramController.API_TELEGRAM,
                                         "/api/user/singup",
                                         "/api/user/info",
+                                        "/api/user/currentAuth",
                                         "/api/poputkatg/",
                                         "/api/search/",
                                         "/actuator",
@@ -47,7 +52,6 @@ public class WebSecurityConfig {
                                                 ).permitAll()
                                 .anyRequest().authenticated()
                                       )
-
                 .formLogin(Customizer.withDefaults())
                 .logout(LogoutConfigurer::permitAll);
 
@@ -56,7 +60,10 @@ public class WebSecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> poputkaUserRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+        return username -> {
+            log.info(username);
+            return poputkaUserRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+        };
     }
 
     @Bean

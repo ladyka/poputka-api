@@ -21,6 +21,7 @@ public class TripMapper {
         dto.setDescription(entity.getDescription());
         dto.setPassengers(entity.getPassengers());
         dto.setOwner(owner.getName());
+        dto.setOwnerTelegramUsername(owner.getTelegramUsername());
         return dto;
     }
 
