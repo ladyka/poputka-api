@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.security.Principal;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/user")
@@ -33,6 +34,10 @@ public class UserController {
 
     @PostMapping("/singup")
     public Map<String, Boolean> createUser(@RequestBody SingUpRequest request) {
+        Optional<PoputkaUser> someUser = poputkaUserRepository.findByUsername(request.getEmail());
+        if (someUser.isPresent()) {
+            return Map.of("success", false);
+        }
         PoputkaUser user = new PoputkaUser();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
