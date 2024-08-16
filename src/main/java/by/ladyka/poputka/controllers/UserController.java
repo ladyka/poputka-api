@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,7 +34,11 @@ public class UserController {
     private final UserMapper userMapper;
 
     @PostMapping("/singup")
-    public Map<String, Boolean> createUser(@RequestBody SingUpRequest request) {
+    public Map<String, Object> createUser(@RequestBody SingUpRequest request, Principal principal) {
+        if (principal != null) {
+            PoputkaUser u = poputkaUserRepository.findByUsername(principal.getName()).orElseThrow();
+            return Map.of("success", false, "username", u.getUsername());
+        }
         Optional<PoputkaUser> someUser = poputkaUserRepository.findByUsername(request.getEmail());
         if (someUser.isPresent()) {
             return Map.of("success", false);
@@ -43,7 +48,16 @@ public class UserController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
         user.setSurname(request.getSurname());
+
+        //TODO AUDIT
+        user.setCreatedUser("ANONYMOUS");
+        user.setCreatedDatetime(Instant.now().getEpochSecond());
         PoputkaUser save = poputkaUserRepository.save(user);
+
+        //TODO AUDIT
+        save.setModified(save);
+        save = poputkaUserRepository.save(user);
+
         return Map.of("success", (save.getId() > 0));
     }
 

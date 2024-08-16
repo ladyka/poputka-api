@@ -6,3 +6,6 @@ spring:
     password: postgres
     url: jdbc:postgresql://localhost:5432/postgres
 debug: true
+application:
+  storage:
+    documents: /home/user/development/poputka/data

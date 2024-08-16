@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface PoputkaUserRepository extends JpaRepository<PoputkaUser, Byte> {
+public interface PoputkaUserRepository extends JpaRepository<PoputkaUser, Long> {
     Optional<PoputkaUser> findByUsername(String username);
 
     Optional<PoputkaUser> findByTelegramId(Long tgId);

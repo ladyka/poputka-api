@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,14 +20,9 @@ import java.util.List;
 @Table(name = "users")
 public class PoputkaUser extends Auditable implements UserDetails {
 
-    /*
-     * Когда у этого сервиса будут проблемы из-за того, что тут тип int, а не long или другой - это будет праздник!!!
-     * Желаю этому моменту скорее наступить!!!
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private byte id;
-
+    private long id;
     private String username;
     private String password;
     private String name;
@@ -54,6 +48,7 @@ public class PoputkaUser extends Auditable implements UserDetails {
         setUsername(email);
     }
 
-    @OneToMany
-    private List<TripEntity> trips = List.of();
+    public String getUUID() {
+        return String.valueOf(getId());
+    }
 }
