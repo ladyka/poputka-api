@@ -1,21 +1,20 @@
 databaseChangeLog:
 - changeSet:
-    id: 2024-06-05-final
+    id: 2024-06-05-poputka_tg_rides
     author: Andrei Ladyka
     changes:
-    - sql: DROP TABLE IF EXISTS poputka_tg_rides;
     - createTable:
         tableName: poputka_tg_rides
         columns:
         - column:
             name: ride_id
-            type: int
+            type: bigint
             constraints:
               primaryKey: true
               nullable: false
         - column:
             name: father_ride_id
-            type: int
+            type: bigint
         - column:
             name: from_place_now
             type: varchar(255)
@@ -24,7 +23,7 @@ databaseChangeLog:
             type: varchar(255)
         - column:
             name: day
-            type: int
+            type: smallint
         - column:
             name: month_name
             type: varchar(10)
@@ -45,16 +44,16 @@ databaseChangeLog:
             type: smallint
         - column:
             name: user_nickname
-            type: varchar(50)
+            type: varchar(36)
         - column:
             name: created_by
-            type: varchar(50)
+            type: varchar(36)
         - column:
             name: created_datetime
             type: bigint
         - column:
             name: modified_by
-            type: varchar(50)
+            type: varchar(36)
         - column:
             name: modified_datetime
             type: bigint
@@ -63,16 +62,15 @@ databaseChangeLog:
             type: smallint
 
 - changeSet:
-    id: 2024-06-11-users-final
+    id: 2024-06-11-users
     author: Andrei Ladyka
     changes:
-    - sql: DROP TABLE IF EXISTS users;
     - createTable:
         tableName: users
         columns:
         - column:
             name: id
-            type: int
+            type: bigint
             autoIncrement: true
             constraints:
               unique: true
@@ -107,25 +105,24 @@ databaseChangeLog:
             type: text
         - column:
             name: created_by
-            type: varchar(50)
+            type: varchar(36)
         - column:
             name: created_datetime
-            type: int
+            type: bigint
         - column:
             name: modified_by
-            type: varchar(50)
+            type: varchar(36)
         - column:
             name: modified_datetime
-            type: int
+            type: bigint
         - column:
             name: version
             type: smallint
 
 - changeSet:
-    id: 2024-06-14-trips-final
+    id: 2024-06-15-trips
     author: Andrei Ladyka
     changes:
-    - sql: DROP TABLE IF EXISTS trips;
     - createTable:
         tableName: trips
         columns:
@@ -177,7 +174,7 @@ databaseChangeLog:
               nullable: false
         - column:
             name: created_by
-            type: varchar(50)
+            type: varchar(36)
             constraints:
               nullable: false
         - column:
@@ -187,7 +184,7 @@ databaseChangeLog:
               nullable: false
         - column:
             name: modified_by
-            type: varchar(50)
+            type: varchar(36)
         - column:
             name: modified_datetime
             type: bigint
@@ -207,7 +204,153 @@ databaseChangeLog:
         - column:
             name: telegram_id
             type: BIGINT
-            defaultValueNumeric: 0
+            defaultValueNumeric: '0'
         - column:
             name: telegram_username
             type: VARCHAR(255)
+
+- changeSet:
+    id: 2024-08-14-documents
+    author: Andrei Ladyka
+    changes:
+    - createTable:
+        tableName: user_documents
+        columns:
+        - column:
+            name: id
+            type: VARCHAR(36)
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: document_type
+            type: varchar(36)
+            constraints:
+              nullable: false
+        - column:
+            name: document_status
+            type: varchar(10)
+            constraints:
+              nullable: false
+        - column:
+            name: document_description
+            type: TEXT
+            constraints:
+              nullable: false
+        - column:
+            name: expiration_date
+            type: date
+            constraints:
+              nullable: false
+        - column:
+            name: created_user
+            type: varchar(36)
+            constraints:
+              nullable: false
+        - column:
+            name: created_datetime
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: modified_user
+            type: varchar(36)
+        - column:
+            name: modified_datetime
+            type: bigint
+        - column:
+            name: version
+            type: smallint
+            constraints:
+              nullable: false
+
+- changeSet:
+    id: 2024-08-15-document_files
+    author: Andrei Ladyka
+    changes:
+    - createTable:
+        tableName: user_document_files
+        columns:
+        - column:
+            name: id
+            type: VARCHAR(36)
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: document_id
+            type: VARCHAR(36)
+            constraints:
+              nullable: false
+        - column:
+            name: file_url
+            type: varchar(511)
+            constraints:
+              nullable: false
+        - column:
+            name: file_status
+            type: varchar(10)
+            constraints:
+              nullable: false
+        - column:
+            name: created_user
+            type: varchar(36)
+            constraints:
+              nullable: false
+        - column:
+            name: created_datetime
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: modified_user
+            type: varchar(36)
+        - column:
+            name: modified_datetime
+            type: bigint
+        - column:
+            name: version
+            type: smallint
+            constraints:
+              nullable: false
+
+- changeSet:
+    id: 2024-08-16-rename-poputka_tg_rides
+    author: Andrei Ladyka
+    changes:
+    - renameColumn:
+        newColumnName: created_user
+        oldColumnName: created_by
+        tableName: poputka_tg_rides
+    - renameColumn:
+        newColumnName: modified_user
+        oldColumnName: modified_by
+        tableName: poputka_tg_rides
+
+- changeSet:
+    id: 2024-08-16-rename-trips
+    author: Andrei Ladyka
+    changes:
+    - renameColumn:
+        newColumnName: created_user
+        oldColumnName: created_by
+        tableName: trips
+    - renameColumn:
+        newColumnName: modified_user
+        oldColumnName: modified_by
+        tableName: trips
+
+
+- changeSet:
+    id: 2024-08-16-rename-users
+    author: Andrei Ladyka
+    changes:
+    - renameColumn:
+        newColumnName: created_user
+        oldColumnName: created_by
+        tableName: users
+    - renameColumn:
+        newColumnName: modified_user
+        oldColumnName: modified_by
+        tableName: users
+

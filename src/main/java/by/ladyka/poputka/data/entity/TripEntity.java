@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,18 +19,17 @@ public class TripEntity extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     private String placeFrom;
     private String placeTo;
-    private Long start;
+    private long start;
     private BigDecimal price;
     private String currency;
     private String description;
     private byte passengers;
 
-    @ManyToOne
-    private PoputkaUser owner;
+    private long ownerId;
 
     public Instant getStartTime() {
         return Instant.ofEpochSecond(start);

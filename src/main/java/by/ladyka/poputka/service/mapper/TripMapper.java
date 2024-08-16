@@ -4,13 +4,18 @@ import by.ladyka.poputka.data.dto.TripDto;
 import by.ladyka.poputka.data.dto.TripRequestDto;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.entity.TripEntity;
+import by.ladyka.poputka.data.repository.PoputkaUserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class TripMapper {
+    private final PoputkaUserRepository poputkaUserRepository;
+
     public TripDto toDto(TripEntity entity) {
         TripDto dto = new TripDto();
-        PoputkaUser owner = entity.getOwner();
+        PoputkaUser owner = poputkaUserRepository.findById(entity.getOwnerId()).orElseThrow();
         dto.setId(entity.getId());
         dto.setFrom(entity.getPlaceFrom());
         dto.setTo(entity.getPlaceTo());
@@ -25,7 +30,7 @@ public class TripMapper {
         return dto;
     }
 
-    public TripEntity toEntity(TripRequestDto dto, TripEntity entity) {
+    public void toEntity(TripRequestDto dto, TripEntity entity) {
         entity.setPlaceFrom(dto.getFrom());
         entity.setPlaceTo(dto.getTo());
         entity.setStartTime(dto.getStart());
@@ -34,6 +39,5 @@ public class TripMapper {
         entity.setDescription(dto.getDescription());
         entity.setPassengers(dto.getPassengers());
         entity.setId(dto.getId());
-        return entity;
     }
 }

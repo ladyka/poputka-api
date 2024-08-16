@@ -1,6 +1,5 @@
 package by.ladyka.poputka.data.repository;
 
-import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.entity.TripEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface TripRepository extends JpaRepository<TripEntity, Long> {
-    Optional<TripEntity> findByIdAndOwner(Long id, PoputkaUser owner);
+    Optional<TripEntity> findByIdAndOwnerId(Long id, long owner);
 
     Page<TripEntity> findAllByPlaceFromAndPlaceToAndStartIsGreaterThan(String placeFrom, String placeTo, Long start, Pageable pageable);
 
