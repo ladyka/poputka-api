@@ -10,8 +10,8 @@ import java.time.Instant;
 @Setter
 public class TripRequestDto {
     private Long id;
-    private String from;
-    private String to;
+    private OSMPlaceDto from;
+    private OSMPlaceDto to;
     private Instant start;
     private BigDecimal price;
     private String currency;

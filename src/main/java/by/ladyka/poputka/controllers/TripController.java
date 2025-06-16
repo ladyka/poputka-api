@@ -44,8 +44,10 @@ public class TripController {
         if (-1 == dto.getId()) {
             trip = new TripEntity();
             trip.setOwnerId(tripOwner.getId());
+            trip.setCreated(tripOwner);
         } else {
             trip = tripRepository.findByIdAndOwnerId(dto.getId(), tripOwner.getId()).orElseThrow();
+            trip.setModified(tripOwner);
         }
         tripMapper.toEntity(dto, trip);
         TripEntity entity = tripRepository.save(trip);

@@ -87,6 +87,7 @@ public class UserController {
         }
         PoputkaUser entity = poputkaUserRepository.findByUsername(principal.getName()).orElseThrow();
         PoputkaUser user = userMapper.updateEntity(dto, entity);
+        user.setModified(entity);
         PoputkaUser save = poputkaUserRepository.save(user);
         return userMapper.toDto(save);
     }
