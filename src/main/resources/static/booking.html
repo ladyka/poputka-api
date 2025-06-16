@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Тест Booking and Messages API</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #166088;
+            --success: #28a745;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .api-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .api-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .api-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .api-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: var(--secondary);
+        }
+
+        .response-container {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .token-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .instructions {
+            background-color: #e7f3ff;
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .instructions h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .instructions ul {
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .api-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Тест Booking API</h1>
+        <div class="subtitle">Интерактивная страница для тестирования API бронирования поездок</div>
+    </header>
+
+    <div class="instructions">
+        <h3>Инструкция по использованию:</h3>
+        <ul>
+            <li>Введите действительный JWT токен в поле выше для аутентификации</li>
+            <li>Убедитесь, что сервер запущен по указанному базовому URL</li>
+            <li>Для каждого типа запроса заполните необходимые поля и нажмите соответствующую кнопку</li>
+            <li>Результаты запроса будут отображены в области ответа</li>
+        </ul>
+    </div>
+
+    <div class="api-container">
+        <!-- Создание бронирования -->
+        <div class="api-section">
+            <h2>Создать бронирование</h2>
+            <div class="form-group">
+                <label for="createTripId">Trip ID:</label>
+                <input id="createTripId" type="number" value="123">
+            </div>
+            <div class="form-group">
+                <label for="createMessage">Сообщение:</label>
+                <textarea id="createMessage" rows="3">Привет, можно присоединиться?</textarea>
+            </div>
+            <button onclick="createBooking()">Создать бронирование</button>
+            <div class="response-container" id="createResponse">Ожидание запроса...</div>
+            <div class="status" id="createStatus"></div>
+        </div>
+
+        <!-- Получить бронирования -->
+        <div class="api-section">
+            <h2>Получить бронирования</h2>
+            <div class="form-group">
+                <label for="getTripId">Trip ID:</label>
+                <input id="getTripId" type="number" value="123">
+            </div>
+            <button onclick="getBookings()">Получить бронирования</button>
+            <div class="response-container" id="getResponse">Ожидание запроса...</div>
+            <div class="status" id="getStatus"></div>
+        </div>
+
+        <!-- Получить сообщения -->
+        <div class="api-section">
+            <h2>Получить сообщения</h2>
+            <div class="form-group">
+                <label for="getBookingId">Booking ID:</label>
+                <input id="getBookingId" type="text" value="abcdef">
+            </div>
+            <button onclick="getMessages()">Получить сообщения</button>
+            <div class="response-container" id="messagesResponse">Ожидание запроса...</div>
+            <div class="status" id="messagesStatus"></div>
+        </div>
+
+        <!-- Отправить сообщение -->
+        <div class="api-section">
+            <h2>Отправить сообщение</h2>
+            <div class="form-group">
+                <label for="sendBookingId">Booking ID:</label>
+                <input id="sendBookingId" type="text" value="abcdef">
+            </div>
+            <div class="form-group">
+                <label for="sendMessage">Сообщение:</label>
+                <textarea id="sendMessage" rows="3">Во сколько выезжаем?</textarea>
+            </div>
+            <button onclick="sendMessage()">Отправить сообщение</button>
+            <div class="response-container" id="sendResponse">Ожидание запроса...</div>
+            <div class="status" id="sendStatus"></div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h3>Примеры запросов:</h3>
+        <ul>
+            <li><strong>Создание бронирования:</strong> PUT /api/booking с JSON { "tripId": 123, "message": "Привет,
+                можно присоединиться?" }
+            </li>
+            <li><strong>Получить бронирования:</strong> GET /api/booking/123</li>
+            <li><strong>Получить сообщения:</strong> GET /api/booking/messages/abcdef</li>
+            <li><strong>Отправить сообщение:</strong> PUT /api/booking/messages с JSON { "bookingId": "abcdef",
+                "content": "Во сколько выезжаем?" }
+            </li>
+        </ul>
+    </div>
+
+    <footer>
+        <p>Тестовая страница для Booking API | Данные сохраняются локально в браузере</p>
+    </footer>
+</div>
+
+<script>
+    // Сохраняем значения полей между перезагрузками страницы
+    document.addEventListener('DOMContentLoaded', function () {
+        // Восстанавливаем значения из localStorage
+        const fields = ['jwtToken', 'apiBaseUrl', 'createTripId', 'createMessage',
+            'getTripId', 'getBookingId', 'sendBookingId', 'sendMessage'];
+
+        fields.forEach(field => {
+            const savedValue = localStorage.getItem(field);
+            if (savedValue !== null) {
+                document.getElementById(field).value = savedValue;
+            }
+        });
+
+        // Сохраняем значения при изменении
+        fields.forEach(field => {
+            document.getElementById(field).addEventListener('input', function () {
+                localStorage.setItem(field, this.value);
+            });
+        });
+    });
+
+    // Общая функция для выполнения запросов
+    async function makeRequest(url, method, data = null) {
+        const fullUrl = url;
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        const options = {
+            method: method,
+            headers: headers
+        };
+
+        if (data) {
+            options.body = JSON.stringify(data);
+        }
+
+        try {
+            const response = await fetch(fullUrl, options);
+            const responseData = await response.json();
+
+            return {
+                status: response.status,
+                ok: response.ok,
+                data: responseData
+            };
+        } catch (error) {
+            return {
+                status: 0,
+                ok: false,
+                data: {error: error.message}
+            };
+        }
+    }
+
+    // Функция отображения ответа
+    function showResponse(elementId, statusElementId, response) {
+        const responseElement = document.getElementById(elementId);
+        const statusElement = document.getElementById(statusElementId);
+
+        if (response.ok) {
+            statusElement.textContent = `Успех! Статус: ${response.status}`;
+            statusElement.className = 'status success';
+            responseElement.textContent = JSON.stringify(response.data, null, 2);
+        } else {
+            statusElement.textContent = `Ошибка! Статус: ${response.status || 'Нет ответа'}`;
+            statusElement.className = 'status error';
+            responseElement.textContent = JSON.stringify(response.data, null, 2);
+        }
+    }
+
+    // Создание бронирования
+    async function createBooking() {
+        const tripId = document.getElementById('createTripId').value;
+        const message = document.getElementById('createMessage').value;
+
+        const data = {
+            tripId: Number(tripId),
+            message: message
+        };
+
+        const response = await makeRequest('/api/booking', 'PUT', data);
+        showResponse('createResponse', 'createStatus', response);
+    }
+
+    // Получить бронирования
+    async function getBookings() {
+        const tripId = document.getElementById('getTripId').value;
+        const response = await makeRequest(`/api/booking/${tripId}`, 'GET');
+        showResponse('getResponse', 'getStatus', response);
+    }
+
+    // Получить сообщения
+    async function getMessages() {
+        const bookingId = document.getElementById('getBookingId').value;
+        const response = await makeRequest(`/api/booking/messages/${bookingId}`, 'GET');
+        showResponse('messagesResponse', 'messagesStatus', response);
+    }
+
+    // Отправить сообщение
+    async function sendMessage() {
+        const bookingId = document.getElementById('sendBookingId').value;
+        const content = document.getElementById('sendMessage').value;
+
+        const data = {
+            bookingId: bookingId,
+            content: content
+        };
+
+        const response = await makeRequest('/api/booking/messages', 'PUT', data);
+        showResponse('sendResponse', 'sendStatus', response);
+    }
+</script>
+</body>
+</html>

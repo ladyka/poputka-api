@@ -31,8 +31,8 @@ public class TripMapper {
     }
 
     public void toEntity(TripRequestDto dto, TripEntity entity) {
-        entity.setPlaceFrom(dto.getFrom());
-        entity.setPlaceTo(dto.getTo());
+        entity.setPlaceFrom(dto.getFrom().getName());
+        entity.setPlaceTo(dto.getTo().getName());
         entity.setStartTime(dto.getStart());
         entity.setPrice(dto.getPrice());
         entity.setCurrency(dto.getCurrency());
