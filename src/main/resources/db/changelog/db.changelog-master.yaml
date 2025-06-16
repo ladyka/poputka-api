@@ -481,3 +481,15 @@ databaseChangeLog:
             type: smallint
             constraints:
               nullable: false
+
+- changeSet:
+    id: 2025-06-16-delete-valuta
+    author: Andrei Ladyka
+    changes:
+    - dropColumn:
+        columns:
+        - column:
+            name: price
+        - column:
+            name: valuta_short
+        tableName: poputka_tg_rides

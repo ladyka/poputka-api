@@ -20,9 +20,10 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/poputkatg/")
+@RequestMapping(PoputkaTGApi.API_POPUTKATG)
 @RequiredArgsConstructor
 public class PoputkaTGApi {
+    public static final String API_POPUTKATG = "/api/poputkatg";
     private final PoputkaTG_RideRepository poputkaTGRideRepository;
 
     @PostMapping("/ride/update")
@@ -62,8 +63,6 @@ public class PoputkaTGApi {
         e.setMonthName(ride.getMonthName());
         e.setCar(ride.getCar());
         e.setDriverWishes(ride.getDriverWishes());
-        e.setPrice(ride.getPrice());
-        e.setValutaShort(ride.getValutaShort());
         e.setTimeStart(ride.getTimeStart());
         e.setUserNickname(ride.getUserNickname());
         return e;

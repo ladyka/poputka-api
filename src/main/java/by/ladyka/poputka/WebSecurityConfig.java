@@ -1,5 +1,6 @@
 package by.ladyka.poputka;
 
+import by.ladyka.poputka.controllers.PoputkaTGApi;
 import by.ladyka.poputka.controllers.TelegramController;
 import by.ladyka.poputka.controllers.TripController;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
@@ -45,10 +46,14 @@ public class WebSecurityConfig {
                                         "/api/user/singup",
                                         "/api/user/info",
                                         "/api/user/currentAuth",
-                                        "/api/poputkatg/",
+                                        PoputkaTGApi.API_POPUTKATG,
+                                        PoputkaTGApi.API_POPUTKATG + "/**",
+                                        "/api/search",
                                         "/api/search/",
+                                        "/api/search/**",
                                         "/actuator",
-                                        "/actuator/"
+                                        "/actuator/",
+                                        "/actuator/**"
                                                 ).permitAll()
                                 .anyRequest().authenticated()
                                       )

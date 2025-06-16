@@ -23,10 +23,6 @@ public class PoputkaTG_RideRequestDto extends PoputkaTG_RequestDto {
     private String car;
     @JsonProperty("driver_wishes")
     private String driverWishes;
-    @JsonProperty("price")
-    private short price;
-    @JsonProperty("valuta_short")
-    private String valutaShort;
     @JsonProperty("time_start")
     private byte timeStart;
     @JsonProperty("user_nickname")
