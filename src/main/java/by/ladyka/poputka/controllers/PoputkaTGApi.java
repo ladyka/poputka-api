@@ -6,6 +6,7 @@ import by.ladyka.poputka.data.entity.PoputkaTG_Ride;
 import by.ladyka.poputka.data.repository.PoputkaTG_RideRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.Map;
 import java.util.Objects;
 
@@ -25,6 +28,8 @@ import java.util.Objects;
 public class PoputkaTGApi {
     public static final String API_POPUTKATG = "/api/poputkatg";
     private final PoputkaTG_RideRepository poputkaTGRideRepository;
+    private static final String[] month_names1 = new String[]{"января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа",
+                                                              "сентября", "октября", "ноября", "декабря"};
 
     @PostMapping("/ride/update")
     public @ResponseBody Map<String, Object> newTrip(
@@ -32,7 +37,12 @@ public class PoputkaTGApi {
             @RequestBody PoputkaTG_RideRequestDto ride
                                                     ) {
         if (Objects.equals(hash(ride.getToday()), poputkatg)) {
-            return Map.of("id", poputkaTGRideRepository.save(toEntity(ride)).getRideId());
+            PoputkaTG_Ride poputkaTGRide = toEntity(ride);
+            if (!StringUtils.isEmpty(poputkaTGRide.getUserNickname())) {
+                return Map.of("id", poputkaTGRideRepository.save(poputkaTGRide).getRideId());
+            } else {
+                return Map.of("id", -1);
+            }
         } else {
             log.warn("REQUEST CHECK FAIL : %s %s".formatted(ride.getToday(), poputkatg));
             return Map.of("success", false);
@@ -65,6 +75,17 @@ public class PoputkaTGApi {
         e.setDriverWishes(ride.getDriverWishes());
         e.setTimeStart(ride.getTimeStart());
         e.setUserNickname(ride.getUserNickname());
+
+        //TODO Year is 2025 !!!
+        int year = 2025;
+        Month m;
+        for (int month = 0; month_names1.length > month; month++) {
+            if (ride.getMonthName().equals(month_names1[month])) {
+                m = Month.of(month + 1);
+                LocalDate startRide = LocalDate.of(year, m, ride.getDay());
+                e.setStartRide(startRide);
+            }
+        }
         return e;
     }
 

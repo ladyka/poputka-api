@@ -493,3 +493,14 @@ databaseChangeLog:
         - column:
             name: valuta_short
         tableName: poputka_tg_rides
+
+- changeSet:
+    id: 2025-06-17-add-start-ride-date
+    author: Andrei Ladyka
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: start_ride
+            type: date
+        tableName: poputka_tg_rides
