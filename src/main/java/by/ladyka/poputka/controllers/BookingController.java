@@ -2,6 +2,7 @@ package by.ladyka.poputka.controllers;
 
 import by.ladyka.poputka.data.dto.BookingCreateDto;
 import by.ladyka.poputka.data.dto.BookingDto;
+import by.ladyka.poputka.data.dto.BookingMessageDto;
 import by.ladyka.poputka.data.dto.MessageCreateDto;
 import by.ladyka.poputka.data.dto.MessageDto;
 import by.ladyka.poputka.data.entity.BookingMessage;
@@ -38,6 +39,11 @@ public class BookingController {
                             .build());
         }
         return dto;
+    }
+
+    @GetMapping({"/"})
+    public List<BookingMessageDto> getAllBookings(Principal principal) {
+        return bookingService.getAllBookings(principal.getName());
     }
 
     @GetMapping({"/{tripId}"})

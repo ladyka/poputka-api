@@ -2,11 +2,13 @@ package by.ladyka.poputka.service;
 
 import by.ladyka.poputka.data.dto.BookingCreateDto;
 import by.ladyka.poputka.data.dto.BookingDto;
+import by.ladyka.poputka.data.dto.BookingMessageDto;
 import by.ladyka.poputka.data.entity.Booking;
 import by.ladyka.poputka.data.entity.BookingMessage;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.entity.TripEntity;
 import by.ladyka.poputka.data.enums.BookingStatus;
+import by.ladyka.poputka.data.enums.MessageStatus;
 import by.ladyka.poputka.data.repository.BookingMessageRepository;
 import by.ladyka.poputka.data.repository.BookingRepository;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -73,5 +76,29 @@ public class BookingService {
             return bookingMessageRepository.findByBookingId(bookingId);
         }
         throw new RuntimeException("Forbidden");
+    }
+
+    public List<BookingMessageDto> getAllBookings(String username) {
+        PoputkaUser user = userRepository.findByUsername(username).orElseThrow();
+        return bookingRepository.findBookingByUserId(user.getId())
+                .stream()
+                .map(row -> BookingMessageDto
+                        .builder()
+                        .bookingId((String) row[0])
+                        .tripId((long) row[1])
+                        .placeFrom((String) row[2])
+                        .placeTo((String) row[3])
+                        .start(Instant.ofEpochSecond((long) row[4]))
+                        .bookingStatus(row[5] != null
+                                       ? BookingStatus.valueOf((String) row[5])
+                                       : BookingStatus.WAITING)
+                        .oppositeUserName((String) row[6])
+                        .content(String.valueOf(row[7]))
+                        .messageStatus(row[8] != null
+                                       ? MessageStatus.valueOf((String) row[8])
+                                       : MessageStatus.SENT)
+                        .lastMessageTime(Instant.ofEpochSecond((long) row[9]))
+                        .userRole((String) row[10])
+                        .build()).toList();
     }
 }
