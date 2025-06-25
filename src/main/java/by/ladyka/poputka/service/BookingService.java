@@ -1,10 +1,10 @@
 package by.ladyka.poputka.service;
 
+import by.ladyka.poputka.data.dto.BookingChatDto;
 import by.ladyka.poputka.data.dto.BookingCreateDto;
 import by.ladyka.poputka.data.dto.BookingDto;
 import by.ladyka.poputka.data.dto.BookingMessageDto;
 import by.ladyka.poputka.data.entity.Booking;
-import by.ladyka.poputka.data.entity.BookingMessage;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.entity.TripEntity;
 import by.ladyka.poputka.data.enums.BookingStatus;
@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -68,21 +69,31 @@ public class BookingService {
                 .toList();
     }
 
-    public List<BookingMessage> bookingMessages(String username, String bookingId) {
+    public List<BookingMessageDto> bookingMessages(String username, String bookingId) {
         PoputkaUser user = userRepository.findByUsername(username).orElseThrow();
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
         TripEntity trip = tripRepository.findById(booking.getTripId()).orElseThrow();
         if ((booking.getPassengerId() == user.getId()) || (trip.getOwnerId() == user.getId())) {
-            return bookingMessageRepository.findByBookingId(bookingId);
+            return bookingMessageRepository.findByBookingId(bookingId)
+                    .stream()
+                    .map(bookingMessage -> BookingMessageDto
+                            .builder()
+                            .id(bookingMessage.getId())
+                            .isMyMessage(Objects.equals(bookingMessage.getSenderId(), user.getId()))
+                            .content(bookingMessage.getContent())
+                            .messageStatus(bookingMessage.getMessageStatus())
+                            .modifiedDatetime(Instant.ofEpochSecond(bookingMessage.getModifiedDatetime()))
+                            .build())
+                    .toList();
         }
         throw new RuntimeException("Forbidden");
     }
 
-    public List<BookingMessageDto> getAllBookings(String username) {
+    public List<BookingChatDto> getAllBookings(String username) {
         PoputkaUser user = userRepository.findByUsername(username).orElseThrow();
         return bookingRepository.findBookingByUserId(user.getId())
                 .stream()
-                .map(row -> BookingMessageDto
+                .map(row -> BookingChatDto
                         .builder()
                         .bookingId((String) row[0])
                         .tripId((long) row[1])

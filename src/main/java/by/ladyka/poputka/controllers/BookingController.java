@@ -1,11 +1,11 @@
 package by.ladyka.poputka.controllers;
 
+import by.ladyka.poputka.data.dto.BookingChatDto;
 import by.ladyka.poputka.data.dto.BookingCreateDto;
 import by.ladyka.poputka.data.dto.BookingDto;
 import by.ladyka.poputka.data.dto.BookingMessageDto;
 import by.ladyka.poputka.data.dto.MessageCreateDto;
 import by.ladyka.poputka.data.dto.MessageDto;
-import by.ladyka.poputka.data.entity.BookingMessage;
 import by.ladyka.poputka.service.BookingService;
 import by.ladyka.poputka.service.MessageService;
 import jakarta.validation.Valid;
@@ -42,7 +42,7 @@ public class BookingController {
     }
 
     @GetMapping({"/"})
-    public List<BookingMessageDto> getAllBookings(Principal principal) {
+    public List<BookingChatDto> getAllBookings(Principal principal) {
         return bookingService.getAllBookings(principal.getName());
     }
 
@@ -52,7 +52,7 @@ public class BookingController {
     }
 
     @GetMapping({"/messages/{bookingId}"})
-    public List<BookingMessage> getMessages(Principal principal, @PathVariable String bookingId) {
+    public List<BookingMessageDto> getMessages(Principal principal, @PathVariable String bookingId) {
         return bookingService.bookingMessages(principal.getName(), bookingId);
     }
 
