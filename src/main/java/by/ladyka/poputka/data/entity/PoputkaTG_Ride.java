@@ -6,6 +6,8 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Entity
@@ -20,8 +22,7 @@ public class PoputkaTG_Ride extends Auditable {
     private String monthName;
     private String car;
     private String driverWishes;
-    private short price;
-    private String valutaShort;
     private byte timeStart;
     private String userNickname;
+    private LocalDate startRide;
 }

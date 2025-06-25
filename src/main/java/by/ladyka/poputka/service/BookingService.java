@@ -1,12 +1,14 @@
 package by.ladyka.poputka.service;
 
+import by.ladyka.poputka.data.dto.BookingChatDto;
 import by.ladyka.poputka.data.dto.BookingCreateDto;
 import by.ladyka.poputka.data.dto.BookingDto;
+import by.ladyka.poputka.data.dto.BookingMessageDto;
 import by.ladyka.poputka.data.entity.Booking;
-import by.ladyka.poputka.data.entity.BookingMessage;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.entity.TripEntity;
 import by.ladyka.poputka.data.enums.BookingStatus;
+import by.ladyka.poputka.data.enums.MessageStatus;
 import by.ladyka.poputka.data.repository.BookingMessageRepository;
 import by.ladyka.poputka.data.repository.BookingRepository;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
@@ -17,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -65,13 +69,47 @@ public class BookingService {
                 .toList();
     }
 
-    public List<BookingMessage> bookingMessages(String username, String bookingId) {
+    public List<BookingMessageDto> bookingMessages(String username, String bookingId) {
         PoputkaUser user = userRepository.findByUsername(username).orElseThrow();
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
         TripEntity trip = tripRepository.findById(booking.getTripId()).orElseThrow();
         if ((booking.getPassengerId() == user.getId()) || (trip.getOwnerId() == user.getId())) {
-            return bookingMessageRepository.findByBookingId(bookingId);
+            return bookingMessageRepository.findByBookingId(bookingId)
+                    .stream()
+                    .map(bookingMessage -> BookingMessageDto
+                            .builder()
+                            .id(bookingMessage.getId())
+                            .isMyMessage(Objects.equals(bookingMessage.getSenderId(), user.getId()))
+                            .content(bookingMessage.getContent())
+                            .messageStatus(bookingMessage.getMessageStatus())
+                            .modifiedDatetime(Instant.ofEpochSecond(bookingMessage.getModifiedDatetime()))
+                            .build())
+                    .toList();
         }
         throw new RuntimeException("Forbidden");
+    }
+
+    public List<BookingChatDto> getAllBookings(String username) {
+        PoputkaUser user = userRepository.findByUsername(username).orElseThrow();
+        return bookingRepository.findBookingByUserId(user.getId())
+                .stream()
+                .map(row -> BookingChatDto
+                        .builder()
+                        .bookingId((String) row[0])
+                        .tripId((long) row[1])
+                        .placeFrom((String) row[2])
+                        .placeTo((String) row[3])
+                        .start(Instant.ofEpochSecond((long) row[4]))
+                        .bookingStatus(row[5] != null
+                                       ? BookingStatus.valueOf((String) row[5])
+                                       : BookingStatus.WAITING)
+                        .oppositeUserName((String) row[6])
+                        .content(String.valueOf(row[7]))
+                        .messageStatus(row[8] != null
+                                       ? MessageStatus.valueOf((String) row[8])
+                                       : MessageStatus.SENT)
+                        .lastMessageTime(Instant.ofEpochSecond((long) row[9]))
+                        .userRole((String) row[10])
+                        .build()).toList();
     }
 }
