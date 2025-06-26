@@ -6,6 +6,7 @@ import by.ladyka.poputka.data.entity.Booking;
 import by.ladyka.poputka.data.entity.BookingMessage;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.entity.TripEntity;
+import by.ladyka.poputka.data.enums.MessageStatus;
 import by.ladyka.poputka.data.repository.BookingMessageRepository;
 import by.ladyka.poputka.data.repository.BookingRepository;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
@@ -40,6 +41,21 @@ public class MessageService {
         }
 
         throw new RuntimeException("Forbidden");
+    }
+
+    public void changeMessageStatus(String username, String messageId, MessageStatus status) {
+        PoputkaUser currUser = poputkaUserRepository.findByUsername(username).orElseThrow();
+        BookingMessage bookingMessage = repository.findById(messageId).orElseThrow();
+        Booking booking = bookingRepository.findById(bookingMessage.getBookingId()).orElseThrow();
+        TripEntity trip = tripRepository.findById(booking.getTripId()).orElseThrow();
+
+        if (booking.getPassengerId() != currUser.getId() && trip.getOwnerId() != currUser.getId()) {
+            throw new RuntimeException("Forbidden");
+        }
+        if (bookingMessage.getSenderId() != currUser.getId() && bookingMessage.getMessageStatus() != status) {
+            bookingMessage.setMessageStatus(status);
+            repository.save(bookingMessage);
+        }
     }
 
 }
