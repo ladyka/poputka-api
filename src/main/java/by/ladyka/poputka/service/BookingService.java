@@ -76,6 +76,12 @@ public class BookingService {
         if ((booking.getPassengerId() == user.getId()) || (trip.getOwnerId() == user.getId())) {
             return bookingMessageRepository.findByBookingId(bookingId)
                     .stream()
+                    .peek(message -> {
+                        if (message.getSenderId() != user.getId() && MessageStatus.SENT.equals(message.getMessageStatus())) {
+                            message.setMessageStatus(MessageStatus.DELIVERED);
+                            bookingMessageRepository.save(message);
+                        }
+                    })
                     .map(bookingMessage -> BookingMessageDto
                             .builder()
                             .id(bookingMessage.getId())
