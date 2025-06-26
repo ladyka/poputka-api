@@ -114,7 +114,7 @@ public class TripController {
                     popularRouteDto.setC(Integer.parseInt(String.valueOf(objects[2])));
                     return popularRouteDto;
                 })
-                .sorted(Comparator.comparingInt(PopularRouteDto::getC))
+                .sorted(Comparator.comparingInt(PopularRouteDto::getC).reversed())
                 .toList();
 
     }
