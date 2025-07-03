@@ -33,13 +33,15 @@ public class BookingController {
     @PutMapping
     public BookingDto createBooking(Principal principal, @RequestBody @Valid BookingCreateDto bookingCreateDto) {
         BookingDto dto = bookingService.createBooking(principal.getName(), bookingCreateDto);
-        if (bookingCreateDto.getMessage() != null && !bookingCreateDto.getMessage().isBlank()) {
-            messageService.sendMessage(principal.getName(),
-                    MessageCreateDto.builder()
-                            .bookingId(dto.getId())
-                            .content(bookingCreateDto.getMessage())
-                            .build());
+        String message = bookingCreateDto.getMessage();
+        if (message != null && !message.isBlank()) {
+            message = "Здравствуйте, хочу забронировать поездку с Вами!";
         }
+        messageService.sendMessage(principal.getName(),
+                MessageCreateDto.builder()
+                        .bookingId(dto.getId())
+                        .content(message)
+                        .build());
         return dto;
     }
 
