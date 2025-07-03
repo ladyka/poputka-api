@@ -34,7 +34,7 @@ public class BookingController {
     public BookingDto createBooking(Principal principal, @RequestBody @Valid BookingCreateDto bookingCreateDto) {
         BookingDto dto = bookingService.createBooking(principal.getName(), bookingCreateDto);
         String message = bookingCreateDto.getMessage();
-        if (message != null && !message.isBlank()) {
+        if (message == null || message.isBlank()) {
             message = "Здравствуйте, хочу забронировать поездку с Вами!";
         }
         messageService.sendMessage(principal.getName(),
