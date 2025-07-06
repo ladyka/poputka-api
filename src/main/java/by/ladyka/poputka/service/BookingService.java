@@ -35,24 +35,23 @@ public class BookingService {
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public BookingDto createBooking(String username, BookingCreateDto bookingCreateDto) {
-        PoputkaUser fellow = userRepository.findByUsername(username).orElseThrow();
-        TripEntity trip = tripRepository.findById(bookingCreateDto.getTripId()).orElseThrow();
-
-        if (trip.getOwnerId() == fellow.getId()) {
-            throw new RuntimeException("Can't book your own trip");
-        }
-
-        Integer approved = bookingRepository.countByTripIdAndBookingStatus(trip.getId(), BookingStatus.ACCEPTED);
-        if (approved >= trip.getPassengers()) {
-            throw new RuntimeException("All seats are already booked");
-        }
-
-        Booking entity = bookingMapper.toEntity(bookingCreateDto, fellow.getId());
-
-        //TODO AUDIT
-        entity.setCreated(fellow);
-
-        Booking booking = bookingRepository.save(entity);
+        PoputkaUser passenger = userRepository.findByUsername(username).orElseThrow();
+        Booking booking = bookingRepository.findBookingByTripIdAndPassengerId(bookingCreateDto.getTripId(), passenger.getId())
+                .orElseGet(() -> {
+                    Booking b = bookingMapper.toEntity(bookingCreateDto, passenger.getId());
+                    TripEntity trip = tripRepository.findById(bookingCreateDto.getTripId()).orElseThrow();
+                    if (trip.getOwnerId() == passenger.getId()) {
+                        throw new RuntimeException("Can't book your own trip");
+                    }
+                    Integer approved = bookingRepository.countByTripIdAndBookingStatus(trip.getId(), BookingStatus.ACCEPTED);
+                    if (approved >= trip.getPassengers()) {
+                        throw new RuntimeException("All seats are already booked");
+                    }
+                    //TODO AUDIT
+                    b.setCreated(passenger);
+                    bookingRepository.save(b);
+                    return b;
+                });
         return bookingMapper.toDto(booking);
     }
 

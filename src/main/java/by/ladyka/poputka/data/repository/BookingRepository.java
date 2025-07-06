@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, String> {
@@ -14,6 +15,8 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
     Integer countByTripIdAndBookingStatus(long tripId, BookingStatus bookingStatus);
 
     List<Booking> findBookingByTripId(Long tripId);
+
+    Optional<Booking> findBookingByTripIdAndPassengerId(Long tripId, Long passengerId);
 
     @Query(value = """
                        WITH driver_bookings AS (
