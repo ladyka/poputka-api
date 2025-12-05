@@ -1,4 +1,4 @@
 include:
 - project: ladyka/gitlab-common
   ref: prod-only
-  file: .gitlab-ci-gradle-service.yml
+  file: .gitlab-ci-gradle-8-jdk-17-service.yml
