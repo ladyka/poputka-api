@@ -24,8 +24,8 @@ public class TripEntity extends Auditable {
     private String placeFrom;
     private String placeTo;
     private long start;
-    private BigDecimal price = BigDecimal.ZERO;
-    private String currency = "NONE";
+//    private BigDecimal price = BigDecimal.ZERO;
+//    private String currency = "NONE";
     private String description;
     private byte passengers;
 

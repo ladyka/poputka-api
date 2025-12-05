@@ -504,3 +504,15 @@ databaseChangeLog:
             name: start_ride
             type: date
         tableName: poputka_tg_rides
+
+- changeSet:
+    id: 2025-12-06-delete-price
+    author: Andrei Ladyka
+    changes:
+    - dropColumn:
+        columns:
+        - column:
+            name: price
+        - column:
+            name: currency
+        tableName: trips

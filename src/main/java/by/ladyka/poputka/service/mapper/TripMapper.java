@@ -26,8 +26,8 @@ public class TripMapper {
         dto.setFrom(entity.getPlaceFrom());
         dto.setTo(entity.getPlaceTo());
         dto.setStart(entity.getStartTime());
-        dto.setPrice(entity.getPrice());
-        dto.setCurrency(entity.getCurrency());
+//        dto.setPrice(entity.getPrice());
+//        dto.setCurrency(entity.getCurrency());
         dto.setCar(owner.getCar());
         dto.setDescription(entity.getDescription());
         dto.setPassengers(entity.getPassengers());
@@ -57,8 +57,8 @@ public class TripMapper {
         entity.setPlaceFrom(dto.getFrom().getName());
         entity.setPlaceTo(dto.getTo().getName());
         entity.setStartTime(dto.getStart());
-        entity.setPrice(dto.getPrice());
-        entity.setCurrency(dto.getCurrency());
+//        entity.setPrice(dto.getPrice());
+//        entity.setCurrency(dto.getCurrency());
         entity.setDescription(dto.getDescription());
         entity.setPassengers(dto.getPassengers());
         entity.setId(dto.getId());
