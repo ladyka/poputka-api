@@ -43,7 +43,7 @@ public class WebSecurityConfig {
                                         TripController.API_TRIP,
                                         TripController.API_TRIP + "/**",
                                         TelegramController.API_TELEGRAM,
-                                        "/api/user/singup",
+                                        "/api/user/signup",
                                         "/api/user/info",
                                         "/api/user/currentAuth",
                                         PoputkaTGApi.API_POPUTKATG,

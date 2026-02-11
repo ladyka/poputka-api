@@ -33,7 +33,7 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
-    @PostMapping("/singup")
+    @PostMapping("/signup")
     public Map<String, Object> createUser(@RequestBody SingUpRequest request, Principal principal) {
         if (principal != null) {
             PoputkaUser u = poputkaUserRepository.findByUsername(principal.getName()).orElseThrow();
