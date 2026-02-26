@@ -1,0 +1,47 @@
+# Данный файл - шаблонная конфигурация CI/CD конвейера для Gradle. Он может быть изменен по Вашему усмотрению.
+# Некоторые шаблоны требуют предварительной настройки перед запуском.
+#
+# Подробнее о синтаксисе можно узнать в документации:
+# https://docs.gitflic.ru/cicd/gitflic-ci-yaml
+
+variables:
+  # `GRADLE_OPTS` задаёт параметры JVM для Gradle. Отключаем демон для CI,
+  # указываем каталог для кэша (будет использоваться в cache).
+  GRADLE_OPTS: >-
+    -Dorg.gradle.daemon=false
+    -Dorg.gradle.caching=true
+    -Dgradle.user.home=$CI_PROJECT_DIR/.gradle
+
+  # Дополнительные опции командной строки Gradle (аналог MAVEN_CLI_OPTS)
+  GRADLE_CLI_OPTS: >-
+    --no-daemon
+    --build-cache
+    --stacktrace
+
+image: gradle:8-jdk17
+
+# Кеширует скачанные зависимости и файлы Gradle Wrapper
+# Если размер кеша слишком велик, можно исключить некоторые подкаталоги
+cache:
+  paths:
+    - .gradle/caches/
+    - .gradle/wrapper/
+
+test:
+  stage: test
+  script:
+    - gradle $GRADLE_CLI_OPTS test  # Запускает unit-тесты
+  artifacts:
+    reports:
+      junit:
+        paths:
+          - build/test-results/test/**/*.xml   # Отчёты JUnit для unit-тестов
+          - build/test-results/integrationTest/**/*.xml   # Для интеграционных тестов (если есть)
+
+deploy:
+  stage: deploy
+  script:
+    - gradle $GRADLE_CLI_OPTS publish  # Публикует артефакты (настроено в build.gradle)
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      when: manual
