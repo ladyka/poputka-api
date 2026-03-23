@@ -1,0 +1,13 @@
+---
+description: Test Liquibase: allow inserts only into users
+alwaysApply: true
+---
+
+# Test Liquibase rule (tests): only users are allowed
+
+When editing **test** Liquibase changelogs (especially under `src/test/resources/db/changelog/`):
+
+- **Allowed**: `insert` / `update` / `delete` / other data changes **only for `users` table** (creating test users like `testuser`, helper, low rating user, etc.).
+- **Forbidden**: any data inserts/updates/deletes for non-`users` tables (e.g. `assistance_requests`, `assistance_offers`, `assistance_reviews`, `competencies`, etc.).
+- **How to create test data**: create non-user entities **in Java test code** via repositories/services/builders (preferably per-test), not via Liquibase test inserts.
+

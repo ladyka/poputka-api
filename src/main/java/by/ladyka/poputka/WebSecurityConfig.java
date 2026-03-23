@@ -1,8 +1,8 @@
 package by.ladyka.poputka;
 
-import by.ladyka.poputka.controllers.PoputkaTGApi;
 import by.ladyka.poputka.controllers.TelegramController;
 import by.ladyka.poputka.controllers.TripController;
+import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,8 +46,6 @@ public class WebSecurityConfig {
                                         "/api/user/signup",
                                         "/api/user/info",
                                         "/api/user/currentAuth",
-                                        PoputkaTGApi.API_POPUTKATG,
-                                        PoputkaTGApi.API_POPUTKATG + "/**",
                                         "/api/search",
                                         "/api/search/",
                                         "/api/search/**",
@@ -67,16 +65,20 @@ public class WebSecurityConfig {
     public UserDetailsService userDetailsService() {
         return username -> {
             log.info(username);
-            return poputkaUserRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+            PoputkaUser poputkaUser = poputkaUserRepository.findByUsername(username).orElseThrow(
+                    () -> new UsernameNotFoundException(username));
+            return new ApplicationUserDetails(poputkaUser);
         };
     }
 
     @Bean
-    public AuditorAware<String> auditorAware() {
-        return () -> Optional.ofNullable(SecurityContextHolder.getContext())
+    public AuditorAware<PoputkaUser> auditorAware() {
+        return () -> Objects.requireNonNull(Optional.ofNullable(SecurityContextHolder.getContext())
                 .map(SecurityContext::getAuthentication)
                 .filter(Authentication::isAuthenticated)
-                .map(Authentication::getName);
+                .map(Authentication::getName)
+                .map(poputkaUserRepository::findByUsername)
+                .orElseThrow());
     }
 
     @Profile("!local")

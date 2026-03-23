@@ -1,0 +1,575 @@
+databaseChangeLog:
+- changeSet:
+    id: roadassistance-1
+    author: ai-assistant
+    comment: Добавление полей в users для модуля помощи
+    changes:
+    - addColumn:
+        tableName: users
+        columns:
+        - column:
+            name: ready_to_help
+            type: BOOLEAN
+            defaultValueBoolean: false
+            constraints:
+              nullable: false
+        - column:
+            name: help_radius
+            type: INT
+            defaultValue: 10
+            constraints:
+              nullable: false
+        - column:
+            name: rating
+            type: DECIMAL(3,2)
+            defaultValue: 0.00
+            constraints:
+              nullable: false
+        - column:
+            name: requires_moderation
+            type: BOOLEAN
+            defaultValueBoolean: false
+            constraints:
+              nullable: false
+        - column:
+            name: is_blocked
+            type: BOOLEAN
+            defaultValueBoolean: false
+            constraints:
+              nullable: false
+
+- changeSet:
+    id: roadassistance-2
+    author: ai-assistant
+    comment: Создание таблицы типов помощи
+    changes:
+    - createTable:
+        tableName: assistance_types
+        columns:
+        - column:
+            name: id
+            type: BIGSERIAL
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: code
+            type: VARCHAR(50)
+            constraints:
+              unique: true
+              nullable: false
+        - column:
+            name: name
+            type: VARCHAR(100)
+            constraints:
+              nullable: false
+
+    - insert:
+        tableName: assistance_types
+        columns:
+        - column:
+            name: code
+            value: TOWING
+        - column:
+            name: name
+            value: Буксировка
+
+    - insert:
+        tableName: assistance_types
+        columns:
+        - column:
+            name: code
+            value: JUMP_START
+        - column:
+            name: name
+            value: Прикурить
+
+    - insert:
+        tableName: assistance_types
+        columns:
+        - column:
+            name: code
+            value: FUEL_DELIVERY
+        - column:
+            name: name
+            value: Доставить топливо
+
+    - insert:
+        tableName: assistance_types
+        columns:
+        - column:
+            name: code
+            value: TIRE_CHANGE
+        - column:
+            name: name
+            value: Замена колеса
+
+    - insert:
+        tableName: assistance_types
+        columns:
+        - column:
+            name: code
+            value: MINOR_REPAIR
+        - column:
+            name: name
+            value: Незначительный ремонт
+
+    - insert:
+        tableName: assistance_types
+        columns:
+        - column:
+            name: code
+            value: UNLOCK_CAR
+        - column:
+            name: name
+            value: Вскрыть авто
+
+    - insert:
+        tableName: assistance_types
+        columns:
+        - column:
+            name: code
+            value: WAIT_TOGETHER
+        - column:
+            name: name
+            value: Просто подождать вместе
+
+    - insert:
+        tableName: assistance_types
+        columns:
+        - column:
+            name: code
+            value: OTHER
+        - column:
+            name: name
+            value: Другое
+
+- changeSet:
+    id: roadassistance-3
+    author: ai-assistant
+    comment: Создание таблицы компетенций
+    changes:
+    - createTable:
+        tableName: competencies
+        columns:
+        - column:
+            name: id
+            type: BIGSERIAL
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: name
+            type: VARCHAR(100)
+            constraints:
+              nullable: false
+        - column:
+            name: related_type_id
+            type: BIGINT
+
+    - addForeignKeyConstraint:
+        baseColumnNames: related_type_id
+        baseTableName: competencies
+        constraintName: fk_competencies_assistance_types
+        referencedColumnNames: id
+        referencedTableName: assistance_types
+
+    # Добавляем компетенции для каждого типа помощи
+    - insert:
+        tableName: competencies
+        columns:
+        - column:
+            name: name
+            value: Буксировочный трос
+        - column:
+            name: related_type_id
+            valueComputed: (SELECT id FROM assistance_types WHERE code = 'TOWING')
+
+    - insert:
+        tableName: competencies
+        columns:
+        - column:
+            name: name
+            value: Тягач
+        - column:
+            name: related_type_id
+            valueComputed: (SELECT id FROM assistance_types WHERE code = 'TOWING')
+
+    - insert:
+        tableName: competencies
+        columns:
+        - column:
+            name: name
+            value: Провода для прикуривания
+        - column:
+            name: related_type_id
+            valueComputed: (SELECT id FROM assistance_types WHERE code = 'JUMP_START')
+
+    - insert:
+        tableName: competencies
+        columns:
+        - column:
+            name: name
+            value: Канистра с топливом
+        - column:
+            name: related_type_id
+            valueComputed: (SELECT id FROM assistance_types WHERE code = 'FUEL_DELIVERY')
+
+    - insert:
+        tableName: competencies
+        columns:
+        - column:
+            name: name
+            value: Домкрат
+        - column:
+            name: related_type_id
+            valueComputed: (SELECT id FROM assistance_types WHERE code = 'TIRE_CHANGE')
+
+    - insert:
+        tableName: competencies
+        columns:
+        - column:
+            name: name
+            value: Запасное колесо
+        - column:
+            name: related_type_id
+            valueComputed: (SELECT id FROM assistance_types WHERE code = 'TIRE_CHANGE')
+
+    - insert:
+        tableName: competencies
+        columns:
+        - column:
+            name: name
+            value: Набор инструментов
+        - column:
+            name: related_type_id
+            valueComputed: (SELECT id FROM assistance_types WHERE code = 'MINOR_REPAIR')
+
+    - insert:
+        tableName: competencies
+        columns:
+        - column:
+            name: name
+            value: Служба вскрытия
+        - column:
+            name: related_type_id
+            valueComputed: (SELECT id FROM assistance_types WHERE code = 'UNLOCK_CAR')
+
+- changeSet:
+    id: roadassistance-4
+    author: ai-assistant
+    comment: Создание таблицы запросов о помощи
+    changes:
+    - createTable:
+        tableName: assistance_requests
+        columns:
+        - column:
+            name: id
+            type: BIGSERIAL
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: car_info
+            type: TEXT
+        - column:
+            name: problem_type_id
+            type: BIGINT
+            constraints:
+              nullable: false
+              foreignKeyName: fk_assistance_requests_assistance_types
+              references: assistance_types(id)
+        - column:
+            name: description
+            type: TEXT
+        - column:
+            name: location_lat
+            type: DECIMAL(10, 8)
+            constraints:
+              nullable: false
+        - column:
+            name: location_lon
+            type: DECIMAL(11, 8)
+            constraints:
+              nullable: false
+        - column:
+            name: address
+            type: VARCHAR(500)
+        - column:
+            name: status
+            type: VARCHAR(50)
+            constraints:
+              nullable: false
+              checkConstraint: "status IN ('CREATED', 'OFFER_RECEIVED', 'OFFER_ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'EXPIRED', 'FAILED')"
+        - column:
+            name: expires_at
+            type: TIMESTAMP
+            constraints:
+              nullable: false
+        - column:
+            name: initial_expires_at
+            type: TIMESTAMP
+            constraints:
+              nullable: false
+        - column:
+            name: max_expires_at
+            type: TIMESTAMP
+            constraints:
+              nullable: false
+        - column:
+            name: last_activity_at
+            type: TIMESTAMP
+            defaultValueComputed: CURRENT_TIMESTAMP
+            constraints:
+              nullable: false
+        - column:
+            name: created_user
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: created_datetime
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: modified_user
+            type: bigint
+        - column:
+            name: modified_datetime
+            type: bigint
+        - column:
+            name: version
+            type: smallint
+            constraints:
+              nullable: false
+
+- changeSet:
+    id: roadassistance-5
+    author: ai-assistant
+    comment: Создание таблицы предложений помощи
+    changes:
+    - createTable:
+        tableName: assistance_offers
+        columns:
+        - column:
+            name: id
+            type: BIGSERIAL
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: request_id
+            type: BIGINT
+            constraints:
+              nullable: false
+              foreignKeyName: fk_assistance_offers_requests
+              references: assistance_requests(id)
+        - column:
+            name: message
+            type: TEXT
+        - column:
+            name: status
+            type: VARCHAR(50)
+            constraints:
+              nullable: false
+              checkConstraint: "status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED')"
+        - column:
+            name: chat_id
+            type: UUID
+        - column:
+            name: created_user
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: created_datetime
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: modified_user
+            type: bigint
+        - column:
+            name: modified_datetime
+            type: bigint
+        - column:
+            name: version
+            type: smallint
+            constraints:
+              nullable: false
+
+- changeSet:
+    id: roadassistance-6
+    author: ai-assistant
+    comment: Создание таблицы отзывов
+    changes:
+    - createTable:
+        tableName: assistance_reviews
+        columns:
+        - column:
+            name: id
+            type: BIGSERIAL
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: request_id
+            type: BIGINT
+            constraints:
+              nullable: false
+              foreignKeyName: fk_assistance_reviews_requests
+              references: assistance_requests(id)
+        - column:
+            name: reviewee_id
+            type: BIGINT
+            constraints:
+              nullable: false
+              foreignKeyName: fk_assistance_reviews_reviewee
+              references: users(id)
+        - column:
+            name: rating
+            type: INTEGER
+            constraints:
+              nullable: false
+              checkConstraint: "rating >= 1 AND rating <= 5"
+        - column:
+            name: comment
+            type: TEXT
+        - column:
+            name: is_auto_generated
+            type: BOOLEAN
+            defaultValueBoolean: false
+            constraints:
+              nullable: false
+        - column:
+            name: is_moderated
+            type: BOOLEAN
+            defaultValueBoolean: false
+            constraints:
+              nullable: false
+        - column:
+            name: moderator_comment
+            type: TEXT
+        - column:
+            name: created_user
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: created_datetime
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: modified_user
+            type: bigint
+        - column:
+            name: modified_datetime
+            type: bigint
+        - column:
+            name: version
+            type: smallint
+            constraints:
+              nullable: false
+
+    - addUniqueConstraint:
+        tableName: assistance_reviews
+        columnNames: request_id, created_user, reviewee_id
+        constraintName: uk_assistance_reviews_request_reviewer_reviewee
+
+- changeSet:
+    id: roadassistance-7
+    author: ai-assistant
+    comment: Создание таблицы связи пользователей и компетенций
+    changes:
+    - createTable:
+        tableName: user_competencies
+        columns:
+        - column:
+            name: user_id
+            type: BIGINT
+            constraints:
+              nullable: false
+              foreignKeyName: fk_user_competencies_user
+              references: users(id)
+        - column:
+            name: competency_id
+            type: BIGINT
+            constraints:
+              nullable: false
+              foreignKeyName: fk_user_competencies_competency
+              references: competencies(id)
+
+    - addPrimaryKey:
+        tableName: user_competencies
+        columnNames: user_id, competency_id
+        constraintName: pk_user_competencies
+
+- changeSet:
+    id: roadassistance-8
+    author: ai-assistant
+    comment: Создание индексов для таблиц модуля помощи
+    changes:
+    - createIndex:
+        tableName: assistance_requests
+        indexName: idx_assistance_requests_status_expires
+        columns:
+        - column:
+            name: status
+        - column:
+            name: expires_at
+
+    - createIndex:
+        tableName: assistance_requests
+        indexName: idx_assistance_requests_location
+        columns:
+        - column:
+            name: location_lat
+        - column:
+            name: location_lon
+
+    - createIndex:
+        tableName: assistance_requests
+        indexName: idx_assistance_requests_author_status
+        columns:
+        - column:
+            name: created_user
+        - column:
+            name: status
+
+    - createIndex:
+        tableName: assistance_offers
+        indexName: idx_assistance_offers_request_status
+        columns:
+        - column:
+            name: request_id
+        - column:
+            name: status
+
+    - createIndex:
+        tableName: assistance_offers
+        indexName: idx_assistance_offers_helper_status
+        columns:
+        - column:
+            name: created_user
+        - column:
+            name: status
+
+    - createIndex:
+        tableName: assistance_reviews
+        indexName: idx_assistance_reviews_reviewee_created
+        columns:
+        - column:
+            name: reviewee_id
+        - column:
+            name: created_datetime
+
+    - createIndex:
+        tableName: users
+        indexName: idx_users_ready_rating
+        columns:
+        - column:
+            name: ready_to_help
+        - column:
+            name: rating

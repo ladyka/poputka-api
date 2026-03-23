@@ -33,11 +33,8 @@ public class MessageService {
         if ((booking.getPassengerId() == sender.getId()) || (trip.getOwnerId() == sender.getId())) {
 
             BookingMessage bookingMessage = mapper.toEntity(dto, sender.getId());
-            //TODO AUDIT
-            bookingMessage.setCreated(sender);
-
-            BookingMessage saved = repository.save(bookingMessage);
-            return mapper.toDto(saved);
+            bookingMessage = repository.save(bookingMessage);
+            return mapper.toDto(bookingMessage);
         }
 
         throw new RuntimeException("Forbidden");

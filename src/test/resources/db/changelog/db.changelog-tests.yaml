@@ -1,0 +1,59 @@
+databaseChangeLog:
+- include:
+    file: classpath:db/changelog/db.changelog-master.yaml
+
+- changeSet:
+    id: test-users
+    author: Andrei Ladyka
+    changes:
+    - insert:
+        tableName: users
+        columns:
+        - column:
+            name: username
+            value: testuser
+        - column:
+            name: name
+            value: Test User
+        - column:
+            name: password
+            value: password
+        - column:
+            name: version
+            value: 0
+        - column:
+            name: rating
+            value: 4
+
+    - insert:
+        tableName: users
+        columns:
+        - column:
+            name: username
+            value: test_helper
+        - column:
+            name: name
+            value: Test Helper
+        - column:
+            name: password
+            value: password
+        - column:
+            name: version
+            value: 0
+
+    - insert:
+        tableName: users
+        columns:
+        - column:
+            name: username
+            value: test_lowrating
+        - column:
+            name: name
+            value: Low Rating User
+        - column:
+            name: password
+            value: password
+        - column:
+            name: version
+            value: 0
+
