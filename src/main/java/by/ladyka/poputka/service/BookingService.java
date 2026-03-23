@@ -47,8 +47,6 @@ public class BookingService {
                     if (approved >= trip.getPassengers()) {
                         throw new RuntimeException("All seats are already booked");
                     }
-                    //TODO AUDIT
-                    b.setCreated(passenger);
                     bookingRepository.save(b);
                     return b;
                 });

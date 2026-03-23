@@ -1,0 +1,142 @@
+databaseChangeLog:
+- changeSet:
+    id: 2026-01-01-booking-remove
+    author: Andrei Ladyka
+    changes:
+    - dropColumn:
+        columns:
+        - column:
+            name: created_user
+        - column:
+            name: modified_user
+        tableName: booking
+
+- changeSet:
+    id: 2026-01-01-booking-create
+    author: Andrei Ladyka
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: created_user
+            type: bigint
+        - column:
+            name: modified_user
+            type: bigint
+        tableName: booking
+
+- changeSet:
+    id: 2026-01-01-message-remove
+    author: Andrei Ladyka
+    changes:
+    - dropColumn:
+        columns:
+        - column:
+            name: created_user
+        - column:
+            name: modified_user
+        tableName: message
+
+- changeSet:
+    id: 2026-01-01-message-create
+    author: Andrei Ladyka
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: created_user
+            type: bigint
+        - column:
+            name: modified_user
+            type: bigint
+        tableName: message
+
+- changeSet:
+    id: 2026-01-01-trips-remove
+    author: Andrei Ladyka
+    changes:
+    - dropColumn:
+        columns:
+        - column:
+            name: created_user
+        - column:
+            name: modified_user
+        tableName: trips
+
+- changeSet:
+    id: 2026-01-01-trips-create
+    author: Andrei Ladyka
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: created_user
+            type: bigint
+        - column:
+            name: modified_user
+            type: bigint
+        tableName: trips
+
+- changeSet:
+    id: 2026-01-01-user_document_files-remove
+    author: Andrei Ladyka
+    changes:
+    - dropColumn:
+        columns:
+        - column:
+            name: created_user
+        - column:
+            name: modified_user
+        tableName: user_document_files
+
+- changeSet:
+    id: 2026-01-01-user_document_files-create
+    author: Andrei Ladyka
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: created_user
+            type: bigint
+        - column:
+            name: modified_user
+            type: bigint
+        tableName: user_document_files
+
+- changeSet:
+    id: 2026-01-01-user_documents-remove
+    author: Andrei Ladyka
+    changes:
+    - dropColumn:
+        columns:
+        - column:
+            name: created_user
+        - column:
+            name: modified_user
+        tableName: user_documents
+
+- changeSet:
+    id: 2026-01-01-user_documents-create
+    author: Andrei Ladyka
+    changes:
+    - addColumn:
+        columns:
+        - column:
+            name: created_user
+            type: bigint
+        - column:
+            name: modified_user
+            type: bigint
+        tableName: user_documents
+
+- changeSet:
+    id: 2026-01-01-users-remove-only
+    author: Andrei Ladyka
+    changes:
+    - dropColumn:
+        columns:
+        - column:
+            name: created_user
+        - column:
+            name: modified_user
+        tableName: users

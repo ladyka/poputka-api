@@ -48,17 +48,8 @@ public class UserController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
         user.setSurname(request.getSurname());
-
-        //TODO AUDIT
-        user.setCreatedUser("ANONYMOUS");
-        user.setCreatedDatetime(Instant.now().getEpochSecond());
-        PoputkaUser save = poputkaUserRepository.save(user);
-
-        //TODO AUDIT
-        save.setModified(save);
-        save = poputkaUserRepository.save(user);
-
-        return Map.of("success", (save.getId() > 0));
+        user = poputkaUserRepository.save(user);
+        return Map.of("success", (user.getId() > 0));
     }
 
     @GetMapping("/currentAuth")
@@ -87,7 +78,6 @@ public class UserController {
         }
         PoputkaUser entity = poputkaUserRepository.findByUsername(principal.getName()).orElseThrow();
         PoputkaUser user = userMapper.updateEntity(dto, entity);
-        user.setModified(entity);
         PoputkaUser save = poputkaUserRepository.save(user);
         return userMapper.toDto(save);
     }

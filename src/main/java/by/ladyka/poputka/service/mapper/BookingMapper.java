@@ -11,11 +11,9 @@ public interface BookingMapper {
     @Mapping(target = "bookingStatus", expression = "java(by.ladyka.poputka.data.enums.BookingStatus.WAITING)")
     @Mapping(target = "createdDatetime", ignore = true)
     @Mapping(target = "createdUser", ignore = true)
-    @Mapping(target = "created", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "modifiedDatetime", ignore = true)
     @Mapping(target = "modifiedUser", ignore = true)
-    @Mapping(target = "modified", ignore = true)
     @Mapping(target = "version", ignore = true)
     Booking toEntity(BookingCreateDto dto, Long passengerId);
 

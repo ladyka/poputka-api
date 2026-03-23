@@ -1,7 +1,8 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.3.12'
+    id 'org.springframework.boot' version '3.5.11'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'by.ladyka'
@@ -9,9 +10,8 @@ version = '0.0.3-dev'
 
 ext {
     lombokMapstructBindingVersion = '0.2.0'
-    lombokVersion = '1.18.30'
-    mapstructVersion = '1.4.1.Final'
-    springdocOpenapiStarterWebmvcUIVersion = '2.6.0'
+    mapstructVersion = '1.6.3'
+    springdocOpenapiStarterWebmvcUIVersion = '2.8.16'
 }
 
 java {
@@ -40,10 +40,12 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     compileOnly "org.mapstruct:mapstruct:${mapstructVersion}"
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    compileOnly "org.projectlombok:lombok"
     annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok"
+
+    // implementation(platform("org.testcontainers:testcontainers-bom:1.21.4"))
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
@@ -56,4 +58,33 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     systemProperty 'spring.profiles.active', 'test'
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+
+    reports {
+        html.required = true
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco/test/html')
+        xml.required = true
+        xml.outputLocation = layout.buildDirectory.file('reports/jacoco/test/jacocoTestReport.xml')
+        csv.required = false
+    }
+}
+
+jacocoTestCoverageVerification {
+    dependsOn test
+
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.1
+            }
+        }
+    }
+}
+
+check {
+    dependsOn jacocoTestCoverageVerification
 }
