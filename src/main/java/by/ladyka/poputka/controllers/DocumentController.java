@@ -51,7 +51,7 @@ public class DocumentController {
             Principal principal
                                                           ) {
         PoputkaUser user = poputkaUserRepository.findByUsername(principal.getName()).orElseThrow();
-        return ResponseEntity.ok(userDocumentRepository.findAllByCreatedUser(user.getUUID()).stream()
+        return ResponseEntity.ok(userDocumentRepository.findAllByCreatedUser(user).stream()
                 .map(documentMapper::toDto)
                 .collect(Collectors.toList()));
     }
@@ -74,9 +74,6 @@ public class DocumentController {
         document.setExpirationDate(dto.getExpirationDate());
         document.setDocumentStatus(DocumentStatus.DRAFT);
 
-        //TODO AUDIT
-        document.setCreated(user);
-
         // Сохранение документа
         UserDocument savedDocument = userDocumentRepository.save(document);
         return new ResponseEntity<>(documentMapper.toDto(savedDocument), HttpStatus.CREATED);
@@ -89,16 +86,13 @@ public class DocumentController {
 
         PoputkaUser user = poputkaUserRepository.findByUsername(principal.getName()).orElseThrow();
         UserDocument document = userDocumentRepository.findById(dto.getId()).orElseThrow();
-        if (Objects.equals(document.getCreatedUser(), user.getUUID())) {
+        if (Objects.equals(document.getCreatedUser().getId(), user.getId())) {
             if (DocumentStatus.DRAFT.equals(document.getDocumentStatus()) ||
                     (DocumentStatus.DECLINE.equals(document.getDocumentStatus()))) {
                 document.setDocumentType(dto.getType());
                 document.setDescription(dto.getDescription());
                 document.setExpirationDate(dto.getExpirationDate());
                 document.setDocumentStatus(DocumentStatus.DRAFT);
-
-                //TODO AUDIT
-                document.setModified(user);
 
                 userDocumentRepository.save(document);
                 return new ResponseEntity<>(documentMapper.toDto(document), HttpStatus.ACCEPTED);
@@ -128,9 +122,6 @@ public class DocumentController {
             userDocumentFile.setDocumentId(savedDocument.getId());
             userDocumentFile.setFileUrl(fileService.saveFile(file, user.getUUID(), documentId));
 
-            //TODO AUDIT
-            userDocumentFile.setCreated(user);
-
             userDocumentFileRepository.save(userDocumentFile);
             filesPath.add(userDocumentFile.getFileUrl());
         }
@@ -143,13 +134,10 @@ public class DocumentController {
             Principal principal) {
         PoputkaUser user = poputkaUserRepository.findByUsername(principal.getName()).orElseThrow();
         UserDocument document = userDocumentRepository.findById(documentId).orElseThrow();
-        if (Objects.equals(document.getCreatedUser(), user.getUUID())) {
+        if (Objects.equals(document.getCreatedUser().getId(), user.getId())) {
             if (DocumentStatus.DRAFT.equals(document.getDocumentStatus()) ||
                     (DocumentStatus.DECLINE.equals(document.getDocumentStatus()))) {
                 document.setDocumentStatus(DocumentStatus.REVIEW);
-
-                //TODO AUDIT
-                document.setModified(user);
 
                 userDocumentRepository.save(document);
                 return new ResponseEntity<>(documentMapper.toDto(document), HttpStatus.ACCEPTED);
