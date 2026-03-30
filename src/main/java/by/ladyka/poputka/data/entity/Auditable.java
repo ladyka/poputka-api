@@ -43,7 +43,7 @@ public abstract class Auditable {
 
     @Column(name = "version", nullable = false)
     @Version
-    private short version = -1;
+    private short version;
 
     public Instant getCreated() {
         return Instant.ofEpochMilli(this.createdDatetime);
