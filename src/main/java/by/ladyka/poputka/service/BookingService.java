@@ -85,7 +85,7 @@ public class BookingService {
                             .isMyMessage(Objects.equals(bookingMessage.getSenderId(), user.getId()))
                             .content(bookingMessage.getContent())
                             .messageStatus(bookingMessage.getMessageStatus())
-                            .modifiedDatetime(Instant.ofEpochSecond(bookingMessage.getModifiedDatetime()))
+                            .modifiedDatetime(bookingMessage.getModified())
                             .build())
                     .toList();
         }
@@ -102,7 +102,7 @@ public class BookingService {
                         .tripId((long) row[1])
                         .placeFrom((String) row[2])
                         .placeTo((String) row[3])
-                        .start(Instant.ofEpochSecond((long) row[4]))
+                        .start(Instant.ofEpochMilli((long) row[4]))
                         .bookingStatus(row[5] != null
                                        ? BookingStatus.valueOf((String) row[5])
                                        : BookingStatus.WAITING)
@@ -111,7 +111,7 @@ public class BookingService {
                         .messageStatus(row[8] != null
                                        ? MessageStatus.valueOf((String) row[8])
                                        : MessageStatus.SENT)
-                        .lastMessageTime(Instant.ofEpochSecond((long) row[9]))
+                        .lastMessageTime(Instant.ofEpochMilli((long) row[9]))
                         .userRole((String) row[10])
                         .build()).toList();
     }

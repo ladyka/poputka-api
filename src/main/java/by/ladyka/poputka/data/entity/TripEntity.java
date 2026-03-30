@@ -32,10 +32,10 @@ public class TripEntity extends Auditable {
     private long ownerId;
 
     public Instant getStartTime() {
-        return Instant.ofEpochSecond(start);
+        return Instant.ofEpochMilli(start);
     }
 
     public void setStartTime(Instant startTime) {
-        start = startTime.getEpochSecond();
+        start = startTime.toEpochMilli();
     }
 }
