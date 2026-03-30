@@ -43,6 +43,5 @@ public class TripMapper {
 //        entity.setCurrency(dto.getCurrency());
         entity.setDescription(dto.getDescription());
         entity.setPassengers(dto.getPassengers());
-        entity.setId(dto.getId());
     }
 }
