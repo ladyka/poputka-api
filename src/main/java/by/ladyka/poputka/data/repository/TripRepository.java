@@ -16,6 +16,6 @@ public interface TripRepository extends JpaRepository<TripEntity, Long> {
 
     Page<TripEntity> findAllByPlaceFromAndPlaceToAndStartIsGreaterThan(String placeFrom, String placeTo, Long start, Pageable pageable);
 
-    @Query(value = "select  t.place_from, t.place_to, count(*) as c from trips t where t.start > (SELECT extract(epoch from now() at time zone 'utc')) group by t.place_from, t.place_to  order by c LIMIT 10;", nativeQuery = true)
+    @Query(value = "select  t.place_from, t.place_to, count(*) as c from trips t where t.start > (SELECT extract(epoch from now() at time zone 'utc'))*1000 group by t.place_from, t.place_to  order by c;", nativeQuery = true)
     List<Object[]> findTop10Routes();
 }
