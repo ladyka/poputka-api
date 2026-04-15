@@ -1,12 +1,12 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.11'
+    id 'org.springframework.boot' version '3.5.13'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'jacoco'
 }
 
 group = 'by.ladyka'
-version = '0.0.3-dev'
+version = '0.0.4'
 
 ext {
     lombokMapstructBindingVersion = '0.2.0'
