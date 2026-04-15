@@ -59,6 +59,7 @@ tasks.named('test') {
     useJUnitPlatform()
     systemProperty 'spring.profiles.active', 'test'
     finalizedBy jacocoTestReport
+    finalizedBy jacocoTestCoverageVerification
 }
 
 jacocoTestReport {
@@ -79,7 +80,9 @@ jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.1
+                counter = 'INSTRUCTION'
+                value = 'COVEREDRATIO'
+                minimum = 0.28
             }
         }
     }

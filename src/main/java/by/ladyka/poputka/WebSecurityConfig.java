@@ -23,6 +23,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.http.HttpMethod;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -39,9 +40,15 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
+                                // public trip endpoints (read/search)
+                                .requestMatchers(HttpMethod.GET, TripController.API_TRIP + "/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, TripController.API_TRIP + "/search").permitAll()
+                                .requestMatchers(HttpMethod.GET, TripController.API_TRIP + "/popular").permitAll()
+
+                                // write trip endpoints (auth required)
+                                .requestMatchers(HttpMethod.POST, TripController.API_TRIP + "/").authenticated()
+
                                 .requestMatchers(
-                                        TripController.API_TRIP,
-                                        TripController.API_TRIP + "/**",
                                         TelegramController.API_TELEGRAM,
                                         "/api/user/signup",
                                         "/api/user/info",
