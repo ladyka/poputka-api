@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 
 import java.security.Principal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -126,8 +127,8 @@ class DocumentControllerTest {
         document.setExpirationDate(LocalDate.of(1990, Month.DECEMBER, 23));
         document.setCreatedUser(user);
         document.setModifiedUser(user);
-        document.setCreatedDatetime(System.currentTimeMillis());
-        document.setModifiedDatetime(System.currentTimeMillis());
+        document.setCreatedDatetime(Instant.now().toEpochMilli());
+        document.setModifiedDatetime(Instant.now().toEpochMilli());
         document = userDocumentRepository.save(document);
         return document.getId();
     }
