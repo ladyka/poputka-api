@@ -6,6 +6,8 @@ import by.ladyka.poputka.data.entity.Booking;
 import by.ladyka.poputka.data.entity.BookingMessage;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.entity.TripEntity;
+import by.ladyka.poputka.data.dto.payload.MessagePayload;
+import by.ladyka.poputka.data.enums.BookingStatus;
 import by.ladyka.poputka.data.enums.MessageStatus;
 import by.ladyka.poputka.data.repository.BookingMessageRepository;
 import by.ladyka.poputka.data.repository.BookingRepository;
@@ -14,6 +16,7 @@ import by.ladyka.poputka.data.repository.TripRepository;
 import by.ladyka.poputka.service.mapper.MessageMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class MessageService {
     private final TripRepository tripRepository;
     private final MessageMapper mapper;
 
+    @Transactional
     public MessageDto sendMessage(String username, MessageCreateDto dto) {
 
         PoputkaUser sender = poputkaUserRepository.findByUsername(username).orElseThrow();
@@ -40,6 +44,25 @@ public class MessageService {
         throw new RuntimeException("Forbidden");
     }
 
+    @Transactional
+    public void appendBookingStatusChangedMessage(String bookingId, Long senderId, BookingStatus from, BookingStatus to) {
+        MessagePayload payload = new MessagePayload.Service(
+                "BOOKING_STATUS_CHANGED",
+                from.name(),
+                to.name()
+        );
+
+        BookingMessage message = BookingMessage.builder()
+                .bookingId(bookingId)
+                .senderId(senderId)
+                .payload(payload)
+                .messageStatus(MessageStatus.SENT)
+                .build();
+
+        repository.save(message);
+    }
+
+    @Transactional
     public void changeMessageStatus(String username, String messageId, MessageStatus status) {
         PoputkaUser currUser = poputkaUserRepository.findByUsername(username).orElseThrow();
         BookingMessage bookingMessage = repository.findById(messageId).orElseThrow();

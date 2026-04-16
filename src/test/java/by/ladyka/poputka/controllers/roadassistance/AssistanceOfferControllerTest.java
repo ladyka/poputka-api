@@ -5,14 +5,15 @@ import by.ladyka.poputka.data.entity.roadassistance.AssistanceOffer;
 import by.ladyka.poputka.data.entity.roadassistance.AssistanceRequest;
 import by.ladyka.poputka.data.repository.roadassistance.AssistanceOfferRepository;
 import by.ladyka.poputka.data.repository.roadassistance.AssistanceRequestRepository;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.Map;
 import java.util.Optional;
 
 class AssistanceOfferControllerTest extends AbstractIntegrationTest {
@@ -78,8 +79,8 @@ class AssistanceOfferControllerTest extends AbstractIntegrationTest {
                     .andReturn()
                     .getResponse()
                     .getContentAsString();
-            JsonNode node = objectMapper.readTree(response);
-            offerId = node.get("id").asLong();
+            Map<String, Object> node = objectMapper.readValue(response, new TypeReference<>() {});
+            offerId = ((Number) node.get("id")).longValue();
         }
 
         mockMvc.perform(
@@ -120,8 +121,8 @@ class AssistanceOfferControllerTest extends AbstractIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        JsonNode node = objectMapper.readTree(response);
-        return node.get("id").asLong();
+        Map<String, Object> node = objectMapper.readValue(response, new TypeReference<>() {});
+        return ((Number) node.get("id")).longValue();
     }
 
     private Long createOfferAsHelperAndGetId(Long requestId) throws Exception {
@@ -137,8 +138,8 @@ class AssistanceOfferControllerTest extends AbstractIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        JsonNode node = objectMapper.readTree(response);
-        return node.get("id").asLong();
+        Map<String, Object> node = objectMapper.readValue(response, new TypeReference<>() {});
+        return ((Number) node.get("id")).longValue();
     }
 }
 

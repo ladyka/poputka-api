@@ -1,0 +1,31 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-04-17-message-payload-migration
+      author: ai-assistant
+      comment: Migrate message.content to jsonb payload and drop content column
+      changes:
+        - addColumn:
+            tableName: message
+            columns:
+              - column:
+                  name: payload
+                  type: jsonb
+
+        - sql:
+            splitStatements: false
+            sql: |
+              UPDATE message
+              SET payload = jsonb_build_object(
+                'type', 'MESSAGE',
+                'text', to_jsonb(content)
+              )
+              WHERE payload IS NULL;
+
+        - addNotNullConstraint:
+            tableName: message
+            columnName: payload
+            columnDataType: jsonb
+
+        - dropColumn:
+            tableName: message
+            columnName: content

@@ -1,0 +1,37 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-04-16-booking-status-expansion
+      author: ai-assistant
+      comment: Expand booking status lifecycle
+      changes:
+        - sql:
+            splitStatements: false
+            sql: |
+              DO $$
+              DECLARE r record;
+              BEGIN
+                FOR r IN
+                  SELECT conname
+                  FROM pg_constraint
+                  WHERE conrelid = 'booking'::regclass
+                    AND contype = 'c'
+                    AND pg_get_constraintdef(oid) LIKE '%booking_status%'
+                LOOP
+                  EXECUTE format('ALTER TABLE booking DROP CONSTRAINT %I', r.conname);
+                END LOOP;
+              END $$;
+
+              ALTER TABLE booking
+                ADD CONSTRAINT booking_booking_status_check
+                CHECK (booking_status IN (
+                  'WAITING',
+                  'ACCEPTED',
+                  'REJECTED',
+                  'CANCELLED',
+                  'EXPIRED',
+                  'NO_SHOW',
+                  'CHECKED_IN',
+                  'IN_PROGRESS',
+                  'COMPLETED'
+                ));
+

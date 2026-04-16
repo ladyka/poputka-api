@@ -1,9 +1,11 @@
 package by.ladyka.poputka.controllers;
 
+import by.ladyka.poputka.data.dto.BookingAvailableStatusesResponseDto;
 import by.ladyka.poputka.data.dto.BookingChatDto;
 import by.ladyka.poputka.data.dto.BookingCreateDto;
 import by.ladyka.poputka.data.dto.BookingDto;
 import by.ladyka.poputka.data.dto.BookingMessageDto;
+import by.ladyka.poputka.data.dto.BookingStatusChangeRequestDto;
 import by.ladyka.poputka.data.dto.MessageCreateDto;
 import by.ladyka.poputka.data.dto.MessageDto;
 import by.ladyka.poputka.data.enums.MessageStatus;
@@ -50,7 +52,7 @@ public class BookingController {
         return bookingService.getAllBookings(principal.getName());
     }
 
-    @GetMapping({"/{tripId}"})
+    @GetMapping("/trip/{tripId}")
     public List<BookingDto> getBookings(Principal principal, @PathVariable Long tripId) {
         return bookingService.getBookings(principal.getName(), tripId);
     }
@@ -60,14 +62,26 @@ public class BookingController {
         return bookingService.bookingMessages(principal.getName(), bookingId);
     }
 
+    @GetMapping("/{bookingId}/available-statuses")
+    public BookingAvailableStatusesResponseDto availableStatuses(Principal principal, @PathVariable String bookingId) {
+        return bookingService.availableBookingStatuses(principal.getName(), bookingId);
+    }
+
+    @PostMapping("/{bookingId}/status")
+    public BookingDto changeBookingStatus(
+            Principal principal,
+            @PathVariable String bookingId,
+            @RequestBody @Valid BookingStatusChangeRequestDto request
+    ) {
+        return bookingService.changeBookingStatus(principal.getName(), bookingId, request);
+    }
+
     @PutMapping({"/messages"})
     public MessageDto sendMessage(Principal principal, @RequestBody MessageCreateDto messageCreateDto) {
-        if (messageCreateDto.getContent() != null && !messageCreateDto.getContent().isBlank()) {
-            return messageService.sendMessage(principal.getName(),
-                    MessageCreateDto.builder()
-                            .bookingId(messageCreateDto.getBookingId())
-                            .content(messageCreateDto.getContent())
-                            .build());
+        boolean hasPayload = messageCreateDto.getPayload() != null;
+        boolean hasText = messageCreateDto.getContent() != null && !messageCreateDto.getContent().isBlank();
+        if (hasPayload || hasText) {
+            return messageService.sendMessage(principal.getName(), messageCreateDto);
         }
         throw new RuntimeException("Forbidden");
     }

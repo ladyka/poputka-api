@@ -1,6 +1,7 @@
 package by.ladyka.poputka.data.entity;
 
 import by.ladyka.poputka.data.enums.MessageStatus;
+import by.ladyka.poputka.data.dto.payload.MessagePayload;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,6 +15,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -42,8 +45,9 @@ public class BookingMessage extends Auditable {
     @Column(name = "sender_id", nullable = false)
     private Long senderId;
 
-    @Column(name = "content", nullable = false, length = Integer.MAX_VALUE)
-    private String content;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
+    private MessagePayload payload;
 
     @Enumerated(value = EnumType.STRING)
     private MessageStatus messageStatus;

@@ -4,6 +4,7 @@ import by.ladyka.poputka.data.entity.Booking;
 import by.ladyka.poputka.data.enums.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
                                t.start,
                                b.booking_status,
                                concat(up.name , ' ' , up.surname) AS opposite_user_name,
-                               m.content,
+                               m.payload::text AS last_message_payload,
                                m.message_status,
                                m.created_datetime AS last_message_time,
                                'driver' AS user_role,
@@ -48,7 +49,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
                                t.start,
                                b.booking_status,
                                concat(uo.name , ' ' , uo.surname) AS opposite_user_name,
-                               m.content,
+                               m.payload::text AS last_message_payload,
                                m.message_status,
                                m.created_datetime AS last_message_time,
                                'passenger' AS user_role,
@@ -68,7 +69,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
                                start,
                                booking_status,
                                opposite_user_name,
-                               content,
+                               last_message_payload,
                                message_status,
                                last_message_time,
                                user_role
@@ -85,7 +86,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
                                start,
                                booking_status,
                                opposite_user_name,
-                               content,
+                               last_message_payload,
                                message_status,
                                last_message_time,
                                user_role
@@ -98,4 +99,14 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
                    """, nativeQuery = true)
         //    List<BookingMessageDto> findBookingByUserId(Long user_id);
     List<Object[]> findBookingByUserId(Long user_id);
+
+    @Query(value = """
+            SELECT b.id
+            FROM booking b
+            JOIN trips t ON t.id = b.trip_id
+            WHERE b.booking_status = :status
+              AND t.start <= :nowMillis
+            """, nativeQuery = true)
+    List<String> findIdsByBookingStatusAndTripStartLessThanEqual(@Param("status") String status,
+                                                               @Param("nowMillis") long nowMillis);
 }

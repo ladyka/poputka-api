@@ -6,8 +6,8 @@ import by.ladyka.poputka.data.repository.BookingRepository;
 import by.ladyka.poputka.data.entity.TripEntity;
 import by.ladyka.poputka.data.entity.Booking;
 import by.ladyka.poputka.data.enums.BookingStatus;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -235,8 +236,8 @@ class TripControllerTest extends AbstractIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        JsonNode node = objectMapper.readTree(response);
-        return node.get("id").asLong();
+        Map<String, Object> node = objectMapper.readValue(response, new TypeReference<>() {});
+        return ((Number) node.get("id")).longValue();
     }
 
     private long createTripEntityAndGetId(String ownerUsername, String from, String to, Instant start, byte passengers, String description) {
@@ -263,8 +264,8 @@ class TripControllerTest extends AbstractIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        JsonNode node = objectMapper.readTree(response);
-        return node.get("id").asLong();
+        Map<String, Object> node = objectMapper.readValue(response, new TypeReference<>() {});
+        return ((Number) node.get("id")).longValue();
     }
 
     private static String tripDtoJson(long id,

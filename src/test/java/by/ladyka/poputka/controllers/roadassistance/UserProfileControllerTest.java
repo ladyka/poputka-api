@@ -1,13 +1,16 @@
 package by.ladyka.poputka.controllers.roadassistance;
 
 import by.ladyka.poputka.controllers.AbstractIntegrationTest;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.List;
+import java.util.Map;
 
 class UserProfileControllerTest extends AbstractIntegrationTest {
 
@@ -60,8 +63,8 @@ class UserProfileControllerTest extends AbstractIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        JsonNode node = objectMapper.readTree(response);
-        return node.get(0).get("id").asLong();
+        List<Map<String, Object>> list = objectMapper.readValue(response, new TypeReference<>() {});
+        return ((Number) list.get(0).get("id")).longValue();
     }
 }
 
