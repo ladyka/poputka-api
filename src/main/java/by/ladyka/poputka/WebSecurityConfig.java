@@ -16,7 +16,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -80,12 +79,17 @@ public class WebSecurityConfig {
 
     @Bean
     public AuditorAware<PoputkaUser> auditorAware() {
-        return () -> Objects.requireNonNull(Optional.ofNullable(SecurityContextHolder.getContext())
-                .map(SecurityContext::getAuthentication)
-                .filter(Authentication::isAuthenticated)
-                .map(Authentication::getName)
-                .map(poputkaUserRepository::findByUsername)
-                .orElseThrow());
+        return () -> {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return Optional.empty();
+            }
+            // Avoid repository lookup during JPA flush: findByUsername can auto-flush and recurse into auditing.
+            if (authentication.getPrincipal() instanceof ApplicationUserDetails details) {
+                return Optional.of(details.user());
+            }
+            return poputkaUserRepository.findByUsername(authentication.getName());
+        };
     }
 
     @Profile("!local")

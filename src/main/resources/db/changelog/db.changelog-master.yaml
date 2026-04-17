@@ -529,3 +529,9 @@ databaseChangeLog:
     changes:
     - dropTable:
         tableName: poputka_tg_rides
+
+- include:
+    file: classpath:db/changelog/2026-04-16-booking-status-expansion.yaml
+
+- include:
+    file: classpath:db/changelog/2026-04-17-message-payload-migration.yaml
