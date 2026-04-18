@@ -46,6 +46,10 @@ public class PoputkaUser implements UserDetails {
     private Boolean readyToHelp = false;
     private Integer helpRadius = 10;
     private BigDecimal rating = BigDecimal.ZERO;
+
+    @Column(name = "trip_rating", nullable = false)
+    private BigDecimal tripRating = BigDecimal.ZERO;
+
     private Boolean requiresModeration = false;
     private Boolean isBlocked = false;
 

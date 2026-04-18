@@ -1,3 +1,9 @@
+poputka:
+  trip-booking-review:
+    draft-to-moderation-delay: 1h
+    moderator-usernames:
+      - testuser
+
 spring:
   jpa:
     hibernate:
