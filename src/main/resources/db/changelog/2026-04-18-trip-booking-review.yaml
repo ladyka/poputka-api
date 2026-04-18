@@ -1,0 +1,125 @@
+databaseChangeLog:
+- changeSet:
+    id: 2026-04-18-users-trip-rating
+    author: poputka-api
+    changes:
+    - addColumn:
+        tableName: users
+        columns:
+        - column:
+            name: trip_rating
+            type: decimal(4,2)
+            defaultValueNumeric: 0.00
+            constraints:
+              nullable: false
+
+- changeSet:
+    id: 2026-04-18-trip-booking-review-table
+    author: poputka-api
+    changes:
+    - createTable:
+        tableName: trip_booking_review
+        columns:
+        - column:
+            name: id
+            type: bigint
+            autoIncrement: true
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: booking_id
+            type: varchar(36)
+            constraints:
+              nullable: false
+        - column:
+            name: reviewee_id
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: status
+            type: varchar(32)
+            constraints:
+              nullable: false
+        - column:
+            name: rating
+            type: int
+            constraints:
+              nullable: false
+        - column:
+            name: comment
+            type: text
+        - column:
+            name: moderator_comment
+            type: text
+        - column:
+            name: approved_datetime
+            type: bigint
+        - column:
+            name: created_user
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: created_datetime
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: modified_user
+            type: bigint
+        - column:
+            name: modified_datetime
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: version
+            type: smallint
+            constraints:
+              nullable: false
+    - addForeignKeyConstraint:
+        baseTableName: trip_booking_review
+        baseColumnNames: booking_id
+        referencedTableName: booking
+        referencedColumnNames: id
+        constraintName: fk_trip_booking_review_booking
+    - addForeignKeyConstraint:
+        baseTableName: trip_booking_review
+        baseColumnNames: reviewee_id
+        referencedTableName: users
+        referencedColumnNames: id
+        constraintName: fk_trip_booking_review_reviewee
+    - addForeignKeyConstraint:
+        baseTableName: trip_booking_review
+        baseColumnNames: created_user
+        referencedTableName: users
+        referencedColumnNames: id
+        constraintName: fk_trip_booking_review_created_user
+    - addForeignKeyConstraint:
+        baseTableName: trip_booking_review
+        baseColumnNames: modified_user
+        referencedTableName: users
+        referencedColumnNames: id
+        constraintName: fk_trip_booking_review_modified_user
+    - addUniqueConstraint:
+        tableName: trip_booking_review
+        columnNames: booking_id, created_user
+        constraintName: uk_trip_booking_review_booking_reviewer
+    - createIndex:
+        tableName: trip_booking_review
+        indexName: idx_trip_booking_review_status_created
+        columns:
+        - column:
+            name: status
+        - column:
+            name: created_datetime
+    - createIndex:
+        tableName: trip_booking_review
+        indexName: idx_trip_booking_review_reviewee_status
+        columns:
+        - column:
+            name: reviewee_id
+        - column:
+            name: status

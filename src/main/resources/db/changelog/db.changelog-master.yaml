@@ -535,3 +535,6 @@ databaseChangeLog:
 
 - include:
     file: classpath:db/changelog/2026-04-17-message-payload-migration.yaml
+
+- include:
+    file: classpath:db/changelog/2026-04-18-trip-booking-review.yaml
