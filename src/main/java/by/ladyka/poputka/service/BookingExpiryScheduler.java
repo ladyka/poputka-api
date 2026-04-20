@@ -19,7 +19,7 @@ public class BookingExpiryScheduler {
     /**
      * Expire bookings that are still WAITING after the trip start time.
      */
-    @Scheduled(fixedDelayString = "${poputka.booking-expiry.poll-ms:60000}")
+    @Scheduled(cron = "${poputka.booking-expiry.cron:0 0 * * * *}")
     public void expireWaitingBookingsPastTripStart() {
         long nowMillis = Instant.now().toEpochMilli();
         for (String bookingId : bookingRepository.findIdsByBookingStatusAndTripStartLessThanEqual(
