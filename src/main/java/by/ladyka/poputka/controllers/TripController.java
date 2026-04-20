@@ -9,6 +9,7 @@ import by.ladyka.poputka.data.entity.TripEntity;
 import by.ladyka.poputka.data.repository.BookingRepository;
 import by.ladyka.poputka.data.repository.TripRepository;
 import by.ladyka.poputka.service.mapper.TripMapper;
+import by.ladyka.poputka.service.notification.NotificationService;
 import by.ladyka.poputka.ApplicationUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,7 @@ public class TripController {
     private final TripRepository tripRepository;
     private final BookingRepository bookingRepository;
     private final TripMapper tripMapper;
+    private final NotificationService notificationService;
 
     @PostMapping("/")
     public TripDto update(
@@ -57,6 +59,8 @@ public class TripController {
         }
         tripMapper.toEntity(dto, trip);
         TripEntity entity = tripRepository.save(trip);
+        // Send notification about new trip creation
+        notificationService.sendAdminTripCreatedNotification(entity);
         return tripMapper.toDto(entity);
     }
 

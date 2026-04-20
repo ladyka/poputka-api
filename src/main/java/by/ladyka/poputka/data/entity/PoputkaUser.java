@@ -41,7 +41,7 @@ public class PoputkaUser implements UserDetails {
     private String car;
     private long telegramId;
     private String telegramUsername;
-    
+
     // Поля для модуля помощи на дороге
     private Boolean readyToHelp = false;
     private Integer helpRadius = 10;

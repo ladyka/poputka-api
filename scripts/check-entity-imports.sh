@@ -11,7 +11,7 @@ CONTROLLERS_CHANGED=$(echo "$CHANGED_FILES" | grep '^src/main/java/by/ladyka/pop
 
 if [ -n "$CONTROLLERS_CHANGED" ]; then
     echo "Checking for 'by.ladyka.poputka.data.entity' imports in changed controller files..."
-    
+
     # Check each changed controller file
     FOUND_IMPORTS=0
     for file in $CONTROLLERS_CHANGED; do

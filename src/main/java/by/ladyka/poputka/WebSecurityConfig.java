@@ -92,13 +92,13 @@ public class WebSecurityConfig {
         };
     }
 
-    @Profile("!local")
+    @Profile("prod")
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Profile("local")
+    @Profile("!prod")
     @Bean
     public PasswordEncoder passwordEncoderLocal() {
         return new PasswordEncoder() {
