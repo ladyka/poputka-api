@@ -13,7 +13,7 @@ import java.util.UUID;
 @Service
 public class FileService {
 
-    @Value("${application.storage.documents")
+    @Value("${application.storage.documents}")
     private String documentStorage;
 
     public String saveFile(MultipartFile file, String... path) {

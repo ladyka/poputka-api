@@ -1,0 +1,36 @@
+server:
+  port: 10001
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    password: ${DB_PASSWORD}
+    username: ${DB_USERNAME}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+notification:
+  admin:
+    enabled: true
+    channels: [telegram, email]
+    telegramChatId: ${TELEGRAM_CHAT_ID}
+    telegramCredentials: ${TELEGRAM_CREDENTIALS:}
+    adminEmail: ${ADMIN_EMAIL}
+  user:
+    enabled: true
+    emailDelayMinutes: 10
+application:
+  storage:
+    documents: ${APPLICATION_STORAGE_DOCUMENTS}

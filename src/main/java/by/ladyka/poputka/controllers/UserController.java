@@ -6,6 +6,7 @@ import by.ladyka.poputka.data.dto.UserInfoSaveRequestDto;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
 import by.ladyka.poputka.service.mapper.UserMapper;
+import by.ladyka.poputka.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class UserController {
     private final PoputkaUserRepository poputkaUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final NotificationService notificationService;
 
     @PostMapping("/signup")
     public Map<String, Object> createUser(@RequestBody SingUpRequest request, Principal principal) {
@@ -79,6 +81,10 @@ public class UserController {
         PoputkaUser entity = poputkaUserRepository.findByUsername(principal.getName()).orElseThrow();
         PoputkaUser user = userMapper.updateEntity(dto, entity);
         PoputkaUser save = poputkaUserRepository.save(user);
+
+        // Send notification about new user registration
+        notificationService.sendAdminUserRegisteredNotification(save);
+
         return userMapper.toDto(save);
     }
 }
