@@ -34,3 +34,6 @@ notification:
 application:
   storage:
     documents: ${APPLICATION_STORAGE_DOCUMENTS}
+poputka:
+  trip-booking-review:
+    moderator-usernames: help@poputka.by
