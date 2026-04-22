@@ -4,8 +4,11 @@ import by.ladyka.poputka.ApplicationUserDetails;
 import by.ladyka.poputka.data.entity.Booking;
 import by.ladyka.poputka.data.entity.TripEntity;
 import by.ladyka.poputka.data.enums.BookingStatus;
+import jakarta.persistence.EntityManager;
+import by.ladyka.poputka.data.entity.TripBookingReview;
 import by.ladyka.poputka.data.repository.BookingRepository;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
+import by.ladyka.poputka.data.repository.TripBookingReviewRepository;
 import by.ladyka.poputka.data.repository.TripRepository;
 import by.ladyka.poputka.service.TripBookingReviewService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +50,12 @@ class TripBookingReviewControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private TripBookingReviewService tripBookingReviewService;
+
+    @Autowired
+    private TripBookingReviewRepository tripBookingReviewRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -185,6 +194,46 @@ class TripBookingReviewControllerTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @WithUserDetails(value = "test_helper", userDetailsServiceBeanName = "userDetailsService")
+    void patchReview_incrementsJpaVersionColumn() throws Exception {
+        long tripId = createTripAsOwner("testuser", "VER_FROM", "VER_TO",
+                Instant.now().plus(1, ChronoUnit.DAYS), (byte) 2);
+        String bookingId = objectMapper.readTree(mockMvc.perform(put("/api/booking")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"tripId\": %d}".formatted(tripId)))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString())
+                .get("id")
+                .asText();
+        transitionToCompleted(bookingId);
+
+        mockMvc.perform(post("/api/trip-booking-review/booking/{bookingId}", bookingId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"rating\":3,\"comment\":\"v0\"}"))
+                .andExpect(status().isOk());
+        long reviewId = extractReviewId(bookingId);
+
+        short versionBefore = tripBookingReviewRepository.findById(reviewId)
+                .map(TripBookingReview::getVersion)
+                .orElseThrow();
+
+        mockMvc.perform(patch("/api/trip-booking-review/{reviewId}", reviewId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"comment\":\"v1\"}"))
+                .andExpect(status().isOk());
+
+        entityManager.flush();
+
+        short versionAfter = tripBookingReviewRepository.findById(reviewId)
+                .map(TripBookingReview::getVersion)
+                .orElseThrow();
+
+        assertThat(versionAfter).isEqualTo((short) (versionBefore + 1));
     }
 
     @Test
