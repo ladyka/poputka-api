@@ -7,26 +7,15 @@ import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.entity.UserDocument;
 import by.ladyka.poputka.data.entity.UserDocumentFile;
 import by.ladyka.poputka.data.enums.DocumentStatus;
-import by.ladyka.poputka.data.repository.PoputkaUserRepository;
 import by.ladyka.poputka.data.repository.UserDocumentFileRepository;
 import by.ladyka.poputka.data.repository.UserDocumentRepository;
 import by.ladyka.poputka.service.mapper.DocumentMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.security.Principal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +32,6 @@ public class DocumentsService {
     private final UserDocumentRepository userDocumentRepository;
     private final UserDocumentFileRepository userDocumentFileRepository;
     private final FileService fileService;
-    private final PoputkaUserRepository poputkaUserRepository;
     private final DocumentMapper documentMapper;
 
     public List<UserDocumentDto> documents(
@@ -55,7 +43,7 @@ public class DocumentsService {
     }
 
     public UserDocumentDto createDocument(
-            @RequestBody UserDocumentRequestCreateDto dto) {
+            UserDocumentRequestCreateDto dto) {
         if (LocalDate.now().plusDays(1).isAfter(dto.getExpirationDate())) {
             log.warn("Документ уже не действует, нужно добавить на это валидацию!!!");
         }
@@ -73,7 +61,7 @@ public class DocumentsService {
     }
 
     public UserDocumentDto updateDocument(
-            @RequestBody UserDocumentRequestUpdateDto dto,
+            UserDocumentRequestUpdateDto dto,
             PoputkaUser user) {
 
         UserDocument document = userDocumentRepository.findById(dto.getId()).orElseThrow();
@@ -104,6 +92,17 @@ public class DocumentsService {
             List<MultipartFile> files,
             PoputkaUser user) {
         UserDocument savedDocument = userDocumentRepository.findById(documentId).orElseThrow();
+        if (!Objects.equals(savedDocument.getCreatedUser().getId(), user.getId())) {
+            log.warn("Пользователь {} пытается загрузить файл к документу {} который принадлежит {}",
+                    user.getUUID(), savedDocument.getId(), savedDocument.getCreatedUser());
+            throw new AccessDeniedException("AccessDenied");
+        }
+        if (!(DocumentStatus.DRAFT.equals(savedDocument.getDocumentStatus())
+                || DocumentStatus.DECLINE.equals(savedDocument.getDocumentStatus()))) {
+            log.warn("Пользователь {} пытается загрузить файл к документу {} который имеет статус {}",
+                    user.getUUID(), savedDocument.getId(), savedDocument.getDocumentStatus());
+            throw new AccessDeniedException("AccessDenied");
+        }
         List<String> filesPath = new ArrayList<>();
         for (MultipartFile file : files) {
             UserDocumentFile userDocumentFile = new UserDocumentFile();
@@ -112,9 +111,7 @@ public class DocumentsService {
             userDocumentFile.setStatus("DRAFT");
             userDocumentFileRepository.save(userDocumentFile);
             filesPath.add(userDocumentFile.getFileUrl());
-            savedDocument.setDocumentStatus(DocumentStatus.REVIEW);
         }
-        userDocumentRepository.save(savedDocument);
         return filesPath;
     }
 

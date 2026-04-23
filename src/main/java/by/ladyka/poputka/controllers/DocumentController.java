@@ -7,6 +7,7 @@ import by.ladyka.poputka.data.dto.UserDocumentRequestUpdateDto;
 import by.ladyka.poputka.service.DocumentsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,8 +32,7 @@ public class DocumentController {
 
     @GetMapping
     public ResponseEntity<List<UserDocumentDto>> documents(
-            ApplicationUserDetails userDetails
-                                                          ) {
+            @AuthenticationPrincipal ApplicationUserDetails userDetails) {
         return ResponseEntity.ok(documentsService.documents(userDetails.user()));
     }
 
@@ -45,22 +45,22 @@ public class DocumentController {
     @PutMapping("/update")
     public ResponseEntity<UserDocumentDto> updateDocument(
             @RequestBody UserDocumentRequestUpdateDto dto,
-            ApplicationUserDetails userDetails) {
-                return new ResponseEntity<>(documentsService.updateDocument(dto, userDetails.user()), HttpStatus.ACCEPTED);
+            @AuthenticationPrincipal ApplicationUserDetails userDetails) {
+        return new ResponseEntity<>(documentsService.updateDocument(dto, userDetails.user()), HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/upload/{documentId}")
     public ResponseEntity<List<String>> uploadDocumentFile(
             @PathVariable String documentId,
             @RequestParam("files") List<MultipartFile> files,
-            ApplicationUserDetails userDetails) {
+            @AuthenticationPrincipal ApplicationUserDetails userDetails) {
         return new ResponseEntity<>(documentsService.uploadDocumentFile(documentId, files, userDetails.user()), HttpStatus.CREATED);
     }
 
     @PostMapping("/submit")
     public ResponseEntity<UserDocumentDto> submit(
-            String documentId,
-            ApplicationUserDetails userDetails) {
+            @RequestParam("documentId") String documentId,
+            @AuthenticationPrincipal ApplicationUserDetails userDetails) {
         return new ResponseEntity<>(documentsService.submit(documentId, userDetails.user()), HttpStatus.ACCEPTED);
     }
 }
