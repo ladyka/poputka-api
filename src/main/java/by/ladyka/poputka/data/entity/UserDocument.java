@@ -4,6 +4,8 @@ import by.ladyka.poputka.data.enums.DocumentStatus;
 import by.ladyka.poputka.data.enums.DocumentType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -18,6 +20,7 @@ import java.time.LocalDate;
 public class UserDocument extends Auditable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, length = 36)
     private String id;
 
