@@ -1,5 +1,6 @@
 package by.ladyka.poputka.controllers;
 
+import by.ladyka.poputka.ApplicationUserDetails;
 import by.ladyka.poputka.data.dto.UserDocumentDto;
 import by.ladyka.poputka.data.dto.UserDocumentRequestCreateDto;
 import by.ladyka.poputka.data.dto.UserDocumentRequestUpdateDto;
@@ -12,9 +13,7 @@ import by.ladyka.poputka.data.repository.UserDocumentRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 
 import java.security.Principal;
@@ -75,7 +74,7 @@ class DocumentControllerTest {
         request.setDescription(description);
         request.setExpirationDate(date);
         request.setType(DocumentType.OTHER);
-        ResponseEntity<UserDocumentDto> response = documentController.createDocument(request, testPrincipal());
+        ResponseEntity<UserDocumentDto> response = documentController.createDocument(request);
         Assertions.assertNotNull(response);
         UserDocumentDto actual = response.getBody();
         Assertions.assertNotNull(actual);
@@ -137,8 +136,8 @@ class DocumentControllerTest {
         userDocumentRepository.deleteById(id);
     }
 
-    private Principal testPrincipal() {
-        return () -> user.getUsername();
+    private ApplicationUserDetails testPrincipal() {
+        return new ApplicationUserDetails(user);
     }
 
 }

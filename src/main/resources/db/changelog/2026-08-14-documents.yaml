@@ -1,0 +1,120 @@
+databaseChangeLog:
+- changeSet:
+    id: 2026-08-14-remove-old-documents
+    author: Andrei Ladyka
+    changes:
+    - dropTable:
+        tableName: user_documents
+    - dropTable:
+        tableName: user_document_files
+
+- changeSet:
+    id: 2026-08-14-documents
+    author: Andrei Ladyka
+    changes:
+    - createTable:
+        tableName: user_documents
+        columns:
+        - column:
+            name: id
+            type: VARCHAR(36)
+            defaultValueComputed: ${uuid}
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: document_type
+            type: varchar(36)
+            constraints:
+              nullable: false
+        - column:
+            name: document_status
+            type: varchar(10)
+            constraints:
+              nullable: false
+        - column:
+            name: document_description
+            type: TEXT
+            constraints:
+              nullable: false
+        - column:
+            name: expiration_date
+            type: date
+            constraints:
+              nullable: false
+        - column:
+            name: created_datetime
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: modified_datetime
+            type: bigint
+        - column:
+            name: version
+            type: smallint
+            constraints:
+              nullable: false
+        - column:
+            name: created_user
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: modified_user
+            type: bigint
+            constraints:
+              nullable: false
+
+- changeSet:
+    id: 2026-08-14-document_files
+    author: Andrei Ladyka
+    changes:
+    - createTable:
+        tableName: user_document_files
+        columns:
+        - column:
+            name: id
+            type: VARCHAR(36)
+            defaultValueComputed: ${uuid}
+            constraints:
+              primaryKey: true
+              nullable: false
+        - column:
+            name: document_id
+            type: VARCHAR(36)
+            constraints:
+              nullable: false
+        - column:
+            name: file_url
+            type: varchar(511)
+            constraints:
+              nullable: false
+        - column:
+            name: file_status
+            type: varchar(10)
+            constraints:
+              nullable: false
+        - column:
+            name: created_datetime
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: modified_datetime
+            type: bigint
+        - column:
+            name: version
+            type: smallint
+            constraints:
+              nullable: false
+        - column:
+            name: created_user
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: modified_user
+            type: bigint
+            constraints:
+              nullable: false
