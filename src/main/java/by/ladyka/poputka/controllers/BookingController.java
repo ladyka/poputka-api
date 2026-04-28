@@ -6,6 +6,7 @@ import by.ladyka.poputka.data.dto.BookingCreateDto;
 import by.ladyka.poputka.data.dto.BookingDto;
 import by.ladyka.poputka.data.dto.BookingMessageDto;
 import by.ladyka.poputka.data.dto.BookingStatusChangeRequestDto;
+import by.ladyka.poputka.data.dto.bookingTripOverview.TripBookingOverviewResponseDto;
 import by.ladyka.poputka.data.dto.MessageCreateDto;
 import by.ladyka.poputka.data.dto.MessageDto;
 import by.ladyka.poputka.data.enums.MessageStatus;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
@@ -50,6 +52,15 @@ public class BookingController {
     @GetMapping({"/"})
     public List<BookingChatDto> getAllBookings(Principal principal) {
         return bookingService.getAllBookings(principal.getName());
+    }
+
+    @GetMapping("/trip/{tripId}/overview")
+    public TripBookingOverviewResponseDto tripBookingOverview(
+            Principal principal,
+            @PathVariable Long tripId,
+            @RequestParam(name = "bookingScope", required = false, defaultValue = "all") String bookingScope
+    ) {
+        return bookingService.tripBookingOverview(principal.getName(), tripId, bookingScope);
     }
 
     @GetMapping("/trip/{tripId}")

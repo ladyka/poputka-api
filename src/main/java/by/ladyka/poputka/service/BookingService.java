@@ -1,5 +1,8 @@
 package by.ladyka.poputka.service;
 
+import by.ladyka.poputka.data.dto.bookingTripOverview.TripBookingOverviewItemDto;
+import by.ladyka.poputka.data.dto.bookingTripOverview.TripBookingOverviewResponseDto;
+import by.ladyka.poputka.data.dto.bookingTripOverview.TripBookingOverviewSummaryDto;
 import by.ladyka.poputka.data.dto.BookingAvailableStatusesResponseDto;
 import by.ladyka.poputka.data.dto.BookingChatDto;
 import by.ladyka.poputka.data.dto.BookingCreateDto;
@@ -10,6 +13,7 @@ import by.ladyka.poputka.data.dto.payload.MessagePayload;
 import by.ladyka.poputka.data.entity.Booking;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.entity.TripEntity;
+import by.ladyka.poputka.data.enums.BookingOverviewScope;
 import by.ladyka.poputka.data.enums.BookingStatus;
 import by.ladyka.poputka.data.enums.MessageStatus;
 import by.ladyka.poputka.data.repository.BookingMessageRepository;
@@ -21,14 +25,25 @@ import by.ladyka.poputka.service.MessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -47,15 +62,16 @@ public class BookingService {
         PoputkaUser passenger = userRepository.findByUsername(username).orElseThrow();
         Booking booking = bookingRepository.findBookingByTripIdAndPassengerId(bookingCreateDto.getTripId(), passenger.getId())
                 .orElseGet(() -> {
-                    Booking b = bookingMapper.toEntity(bookingCreateDto, passenger.getId());
-                    TripEntity trip = tripRepository.findById(bookingCreateDto.getTripId()).orElseThrow();
+                    TripEntity trip = tripRepository.findById(bookingCreateDto.getTripId())
+                            .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
                     if (trip.getOwnerId() == passenger.getId()) {
-                        throw new RuntimeException("Can't book your own trip");
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can't book your own trip");
                     }
-                    Integer approved = bookingRepository.countByTripIdAndBookingStatus(trip.getId(), BookingStatus.ACCEPTED);
-                    if (approved >= trip.getPassengers()) {
-                        throw new RuntimeException("All seats are already booked");
+                    if (countOccupyingPassengerSeatBookings(trip.getId())
+                        >= normalizedPassengerCapacity(trip)) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All seats are already booked");
                     }
+                    Booking b = bookingMapper.toEntity(bookingCreateDto, passenger.getId());
                     bookingRepository.save(b);
                     return b;
                 });
@@ -64,15 +80,38 @@ public class BookingService {
 
     public List<BookingDto> getBookings(String username, Long tripId) {
         PoputkaUser user = userRepository.findByUsername(username).orElseThrow();
-        TripEntity trip = tripRepository.findById(tripId).orElseThrow();
+        TripEntity trip = tripRepository.findById(tripId).orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
 
         if (user.getId() != trip.getOwnerId()) {
-            throw new RuntimeException("Forbidden");
+            throw new ResponseStatusException(NOT_FOUND);
         }
 
         return bookingRepository.findBookingByTripId(tripId).stream()
                 .map(bookingMapper::toDto)
                 .toList();
+    }
+
+    public TripBookingOverviewResponseDto tripBookingOverview(String username,
+                                                              long tripId,
+                                                              String bookingScopeRaw) {
+        BookingOverviewScope scope = parseBookingScopeParameter(bookingScopeRaw);
+        PoputkaUser user = userRepository.findByUsername(username).orElseThrow();
+        TripEntity trip = tripRepository.findById(tripId).orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
+        if (user.getId() != trip.getOwnerId()) {
+            throw new ResponseStatusException(NOT_FOUND);
+        }
+
+        TripBookingOverviewSummaryDto summary = buildSeatSummaryForTrip(trip);
+        Page<Object[]> rawRows = bookingRepository.pageTripBookingOverview(
+                tripId, scope, Instant.now().toEpochMilli(), Pageable.unpaged());
+        List<TripBookingOverviewItemDto> items = rawRows.getContent().stream()
+                .map(this::mapTripBookingOverviewRow)
+                .toList();
+        Page<TripBookingOverviewItemDto> bookings = new PageImpl<>(items);
+        return TripBookingOverviewResponseDto.builder()
+                .summary(summary)
+                .bookings(bookings)
+                .build();
     }
 
     public List<BookingMessageDto> bookingMessages(String username, String bookingId) {
@@ -98,7 +137,7 @@ public class BookingService {
                             .build())
                     .toList();
         }
-        throw new RuntimeException("Forbidden");
+        throw new ResponseStatusException(FORBIDDEN);
     }
 
     public List<BookingChatDto> getAllBookings(String username) {
@@ -131,7 +170,7 @@ public class BookingService {
         TripEntity trip = tripRepository.findById(booking.getTripId()).orElseThrow();
 
         if (!isParticipant(actor, booking, trip)) {
-            throw new RuntimeException("Forbidden");
+            throw new ResponseStatusException(FORBIDDEN);
         }
 
         return BookingAvailableStatusesResponseDto.builder()
@@ -146,12 +185,13 @@ public class BookingService {
         TripEntity trip = tripRepository.findById(booking.getTripId()).orElseThrow();
 
         if (!isParticipant(actor, booking, trip)) {
-            throw new RuntimeException("Forbidden");
+            throw new ResponseStatusException(FORBIDDEN);
         }
 
         BookingStatus from = booking.getBookingStatus();
         BookingStatus to = request.getTo();
 
+        assertTripHasPassengerSeatWhenAccepting(waitingBeforeAccept(from), to, trip);
         assertTransitionAllowed(actor, booking, trip, from, to);
 
         booking.setBookingStatus(to);
@@ -302,14 +342,126 @@ public class BookingService {
 
     private void requireOwner(PoputkaUser actor, TripEntity trip) {
         if (!isOwner(actor, trip)) {
-            throw new RuntimeException("Forbidden");
+            throw new ResponseStatusException(FORBIDDEN);
         }
     }
 
     private void requirePassenger(PoputkaUser actor, Booking booking) {
         if (!isPassenger(actor, booking)) {
-            throw new RuntimeException("Forbidden");
+            throw new ResponseStatusException(FORBIDDEN);
         }
+    }
+
+    private BookingOverviewScope parseBookingScopeParameter(String bookingScopeRaw) {
+        try {
+            return BookingOverviewScope.parseQueryParameter(bookingScopeRaw);
+        } catch (IllegalArgumentException ignored) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "bookingScope must be all, active, or archived");
+        }
+    }
+
+    private TripBookingOverviewSummaryDto buildSeatSummaryForTrip(TripEntity trip) {
+        long tripId = trip.getId();
+        int occupied = countOccupyingPassengerSeatBookings(tripId);
+        int capacity = normalizedPassengerCapacity(trip);
+        int freeSeats = Math.max(0, capacity - occupied);
+        return TripBookingOverviewSummaryDto.builder()
+                .tripId(tripId)
+                .passengerSeatCapacity(capacity)
+                .occupiedSeats(occupied)
+                .freePassengerSeats(freeSeats)
+                .full(freeSeats == 0)
+                .build();
+    }
+
+    private int countOccupyingPassengerSeatBookings(long tripId) {
+        return bookingRepository.countByTripIdAndBookingStatusIn(
+                tripId, BookingStatus.occupyingPassengerSeatStatuses());
+    }
+
+    /** {@code TripEntity.passengers} is modeled as passenger capacity (0–100); stored as signed byte but never negative in valid data. */
+    private int normalizedPassengerCapacity(TripEntity trip) {
+        return trip.getPassengers() & 0xFF;
+    }
+
+    private BookingStatus waitingBeforeAccept(BookingStatus current) {
+        return current != null ? current : BookingStatus.WAITING;
+    }
+
+    private void assertTripHasPassengerSeatWhenAccepting(BookingStatus fromPreview, BookingStatus to, TripEntity trip) {
+        if (fromPreview == BookingStatus.WAITING && to == BookingStatus.ACCEPTED
+            && countOccupyingPassengerSeatBookings(trip.getId())
+               >= normalizedPassengerCapacity(trip)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All seats are already booked");
+        }
+    }
+
+    private TripBookingOverviewItemDto mapTripBookingOverviewRow(Object[] row) {
+        String bookingId = String.valueOf(Objects.requireNonNull(row[0], "booking id"));
+        BookingStatus bookingStatus = parseBookingStatusColumn(row[1]);
+        String passengerDisplayName = Objects.toString(row[2], "");
+        MessagePayload payload = parseLastMessagePayload(row[3]);
+        Long lastEpoch = toEpochMillis(row[5]);
+        Instant lastTime = lastEpoch != null ? Instant.ofEpochMilli(lastEpoch) : null;
+        MessageStatus messageStatus;
+        if (payload == null && lastTime == null) {
+            messageStatus = null;
+        } else {
+            messageStatus = parseMessageStatusColumn(row[4]);
+        }
+        return TripBookingOverviewItemDto.builder()
+                .bookingId(bookingId)
+                .bookingStatus(bookingStatus)
+                .passengerDisplayName(passengerDisplayName)
+                .lastMessagePayload(payload)
+                .messageStatus(messageStatus)
+                .lastMessageTime(lastTime)
+                .build();
+    }
+
+    private BookingStatus parseBookingStatusColumn(Object raw) {
+        String text = Objects.toString(raw, "").trim();
+        if (text.isEmpty()) {
+            return BookingStatus.WAITING;
+        }
+        return BookingStatus.valueOf(text);
+    }
+
+    private MessageStatus parseMessageStatusColumn(Object raw) {
+        if (raw == null) {
+            return MessageStatus.SENT;
+        }
+        String text = String.valueOf(raw).trim();
+        if (text.isEmpty()) {
+            return MessageStatus.SENT;
+        }
+        return MessageStatus.valueOf(text);
+    }
+
+    private Long toEpochMillis(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw instanceof Long l) {
+            return l;
+        }
+        if (raw instanceof Integer i) {
+            return i.longValue();
+        }
+        if (raw instanceof BigInteger bi) {
+            return bi.longValue();
+        }
+        if (raw instanceof BigDecimal bd) {
+            return bd.longValueExact();
+        }
+        if (raw instanceof Timestamp ts) {
+            return ts.getTime();
+        }
+        if (raw instanceof Instant i) {
+            return i.toEpochMilli();
+        }
+        throw new IllegalStateException("Unsupported timestamp column: " + raw.getClass());
     }
 
     private MessagePayload parseLastMessagePayload(Object raw) {

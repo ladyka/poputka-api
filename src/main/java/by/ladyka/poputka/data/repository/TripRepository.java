@@ -14,6 +14,12 @@ import java.util.Optional;
 public interface TripRepository extends JpaRepository<TripEntity, Long> {
     Optional<TripEntity> findByIdAndOwnerId(Long id, long owner);
 
+    Page<TripEntity> findAllByOwnerId(long ownerId, Pageable pageable);
+
+    Page<TripEntity> findAllByOwnerIdAndStartGreaterThanEqual(long ownerId, long startMinInclusiveEpochMillis, Pageable pageable);
+
+    Page<TripEntity> findAllByOwnerIdAndStartLessThan(long ownerId, long startMaxExclusiveEpochMillis, Pageable pageable);
+
     Page<TripEntity> findAllByPlaceFromAndPlaceToAndStartIsGreaterThan(String placeFrom, String placeTo, Long start, Pageable pageable);
 
     @Query(value = "select  t.place_from, t.place_to, count(*) as c from trips t where t.start > (SELECT extract(epoch from now() at time zone 'utc'))*1000 group by t.place_from, t.place_to  order by c;", nativeQuery = true)

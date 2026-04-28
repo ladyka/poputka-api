@@ -540,4 +540,7 @@ databaseChangeLog:
     file: classpath:db/changelog/2026-04-18-trip-booking-review.yaml
 
 - include:
+    file: classpath:db/changelog/2026-04-28-trip-osm-place-fields.yaml
+
+- include:
     file: classpath:db/changelog/2026-08-14-documents.yaml

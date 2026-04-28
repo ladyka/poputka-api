@@ -11,7 +11,6 @@ import by.ladyka.poputka.data.repository.PoputkaUserRepository;
 import by.ladyka.poputka.data.repository.TripRepository;
 import by.ladyka.poputka.service.BookingService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -24,7 +23,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -82,12 +80,10 @@ class BookingControllerTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.available", containsInAnyOrder("CANCELLED")));
 
-        assertThatThrownBy(() -> mockMvc.perform(post("/api/booking/{bookingId}/status", bookingId)
+        mockMvc.perform(post("/api/booking/{bookingId}/status", bookingId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"to\":\"ACCEPTED\"}"))
-                .andReturn())
-                .isInstanceOf(ServletException.class)
-                .hasRootCauseInstanceOf(RuntimeException.class);
+                .andExpect(status().isForbidden());
 
         mockMvc.perform(get("/api/booking/messages/{bookingId}", bookingId))
                 .andExpect(status().isOk())
@@ -221,6 +217,77 @@ class BookingControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
+    void tripOverview_reflectsOccupiedSeats_andAcceptTransition() throws Exception {
+        long tripId = createTripEntityAsOwner("testuser", "OV_FROM", "OV_TO",
+                Instant.now().plus(2, ChronoUnit.DAYS), (byte) 3);
+
+        long passengerId = userRepository.findByUsername("test_helper").orElseThrow().getId();
+        Booking waiting = new Booking();
+        waiting.setTripId(tripId);
+        waiting.setPassengerId(passengerId);
+        waiting.setBookingStatus(BookingStatus.WAITING);
+        String bookingId = bookingRepository.save(waiting).getId();
+
+        mockMvc.perform(get("/api/booking/trip/{tripId}/overview", tripId)
+                        .param("bookingScope", "all"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.summary.tripId").value(tripId))
+                .andExpect(jsonPath("$.summary.passengerSeatCapacity").value(3))
+                .andExpect(jsonPath("$.summary.occupiedSeats").value(0))
+                .andExpect(jsonPath("$.summary.freePassengerSeats").value(3))
+                .andExpect(jsonPath("$.summary.full").value(false))
+                .andExpect(jsonPath("$.bookings.content[0].bookingId").value(bookingId))
+                .andExpect(jsonPath("$.bookings.content[0].passengerDisplayName").exists())
+                .andExpect(jsonPath("$.bookings.totalElements").value(1));
+
+        mockMvc.perform(post("/api/booking/{bookingId}/status", bookingId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"to\":\"ACCEPTED\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/booking/trip/{tripId}/overview", tripId)
+                        .param("bookingScope", "all"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.summary.occupiedSeats").value(1))
+                .andExpect(jsonPath("$.summary.freePassengerSeats").value(2))
+                .andExpect(jsonPath("$.summary.full").value(false));
+    }
+
+    @Test
+    @WithUserDetails(value = "test_helper", userDetailsServiceBeanName = "userDetailsService")
+    void tripOverview_shouldReturnNotFound_whenNotTripOwner() throws Exception {
+        long tripId = createTripEntityAsOwner("testuser", "NO_OV", "NO_OV2",
+                Instant.now().plus(1, ChronoUnit.DAYS), (byte) 1);
+        mockMvc.perform(get("/api/booking/trip/{tripId}/overview", tripId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
+    void tripOverview_archivedScope_includesTerminalBookingOnFutureTrip() throws Exception {
+        long tripId = createTripEntityAsOwner("testuser", "ARC_FROM", "ARC_TO",
+                Instant.now().plus(3, ChronoUnit.DAYS), (byte) 2);
+        long passengerId = userRepository.findByUsername("test_helper").orElseThrow().getId();
+        Booking booking = new Booking();
+        booking.setTripId(tripId);
+        booking.setPassengerId(passengerId);
+        booking.setBookingStatus(BookingStatus.REJECTED);
+        String bookingId = bookingRepository.save(booking).getId();
+
+        mockMvc.perform(get("/api/booking/trip/{tripId}/overview", tripId)
+                        .param("bookingScope", "active"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.bookings.totalElements").value(0));
+
+        mockMvc.perform(get("/api/booking/trip/{tripId}/overview", tripId)
+                        .param("bookingScope", "archived"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.bookings.totalElements").value(1))
+                .andExpect(jsonPath("$.bookings.content[0].bookingId").value(bookingId));
+    }
+
+    @Test
     @WithUserDetails(value = "test_lowrating", userDetailsServiceBeanName = "userDetailsService")
     void messages_forbiddenForNonParticipant() throws Exception {
         long tripId = createTripEntityAsOwner("testuser", "NF_FROM", "NF_TO",
@@ -232,10 +299,8 @@ class BookingControllerTest extends AbstractIntegrationTest {
         booking.setBookingStatus(BookingStatus.WAITING);
         String bookingId = bookingRepository.save(booking).getId();
 
-        assertThatThrownBy(() -> mockMvc.perform(get("/api/booking/messages/{bookingId}", bookingId))
-                .andReturn())
-                .isInstanceOf(ServletException.class)
-                .hasRootCauseInstanceOf(RuntimeException.class);
+        mockMvc.perform(get("/api/booking/messages/{bookingId}", bookingId))
+                .andExpect(status().isForbidden());
     }
 
     private long createTripEntityAsOwner(String ownerUsername, String from, String to,
