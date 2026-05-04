@@ -7,6 +7,7 @@ import by.ladyka.poputka.data.dto.TripDto;
 import by.ladyka.poputka.data.dto.TripSearchRequest;
 import by.ladyka.poputka.data.dto.TripUpdateRequestDto;
 import by.ladyka.poputka.data.enums.BookingStatus;
+import by.ladyka.poputka.data.enums.OwnedTripParticipant;
 import by.ladyka.poputka.data.enums.OwnedTripTimeFilter;
 import by.ladyka.poputka.data.entity.TripEntity;
 import by.ladyka.poputka.data.repository.BookingRepository;
@@ -60,18 +61,36 @@ public class TripService {
         return tripMapper.toDto(entity);
     }
 
-    public Page<TripDto> findOwnedTrips(ApplicationUserDetails user, String timeFilterRaw, Pageable pageable) {
-        long ownerId = user.user().getId();
+    public Page<TripDto> findOwnedTrips(
+            ApplicationUserDetails user,
+            String timeFilterRaw,
+            String participantRaw,
+            Pageable pageable
+    ) {
+        long userId = user.user().getId();
+        OwnedTripParticipant participant = parseOwnedTripParticipant(participantRaw);
         OwnedTripTimeFilter filter = parseOwnedTripTimeFilter(timeFilterRaw);
         Pageable effective = pageable.getSort().isSorted()
                                ? pageable
                                : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
                 Sort.by(Sort.Direction.DESC, "start"));
         long now = Instant.now().toEpochMilli();
-        Page<TripEntity> page = switch (filter) {
-            case ALL -> tripRepository.findAllByOwnerId(ownerId, effective);
-            case UPCOMING -> tripRepository.findAllByOwnerIdAndStartGreaterThanEqual(ownerId, now, effective);
-            case PAST -> tripRepository.findAllByOwnerIdAndStartLessThan(ownerId, now, effective);
+        Page<TripEntity> page = switch (participant) {
+            case ALL -> switch (filter) {
+                case ALL -> tripRepository.findAllTripsWhereOwnerOrPassengerBooking(userId, effective);
+                case UPCOMING -> tripRepository.findAllTripsWhereOwnerOrPassengerBookingAndStartGreaterThanEqual(userId, now, effective);
+                case PAST -> tripRepository.findAllTripsWhereOwnerOrPassengerBookingAndStartLessThan(userId, now, effective);
+            };
+            case OWNER -> switch (filter) {
+                case ALL -> tripRepository.findAllByOwnerId(userId, effective);
+                case UPCOMING -> tripRepository.findAllByOwnerIdAndStartGreaterThanEqual(userId, now, effective);
+                case PAST -> tripRepository.findAllByOwnerIdAndStartLessThan(userId, now, effective);
+            };
+            case PASSENGER -> switch (filter) {
+                case ALL -> tripRepository.findAllTripsWithPassengerBooking(userId, effective);
+                case UPCOMING -> tripRepository.findAllTripsWithPassengerBookingAndStartGreaterThanEqual(userId, now, effective);
+                case PAST -> tripRepository.findAllTripsWithPassengerBookingAndStartLessThan(userId, now, effective);
+            };
         };
         return page.map(tripMapper::toDto);
     }
@@ -129,6 +148,22 @@ public class TripService {
         } catch (IllegalArgumentException ignored) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "timeFilter must be all, upcoming, or past");
+        }
+    }
+
+    private OwnedTripParticipant parseOwnedTripParticipant(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return OwnedTripParticipant.ALL;
+        }
+        try {
+            OwnedTripParticipant parsed = OwnedTripParticipant.valueOf(raw.trim().toUpperCase());
+            if (parsed == OwnedTripParticipant.ALL) {
+                throw new IllegalArgumentException();
+            }
+            return parsed;
+        } catch (IllegalArgumentException ignored) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "participant must be owner or passenger (omit for both)");
         }
     }
 

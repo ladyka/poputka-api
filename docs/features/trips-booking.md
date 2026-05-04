@@ -157,13 +157,13 @@
 
 - Значения «занято / свободно / полная машина» брать только из **`summary`** в **`GET .../overview`**, не пересчитывать по отфильтрованному **`bookings.content`**.
 - Список строк под **`bookingScope`** приходит **одним** запросом; дополнительную группировку/сортировку можно делать на клиенте.
-- По **`GET /api/trip/owned`** использовать **`content`** страницы `Page<TripDto>` как основной массив списка.
+- По **`GET /api/trip/owned`** использовать **`content`** страницы `Page<TripDto>` как основной массив списка; «все роли» — **не передавать** `participant`, водитель — **`participant=owner`**, пассажир — **`participant=passenger`** (см. `trips.md`).
 
 ## Changelog (контракт «мои поездки и обзор водителя»)
 
 | № | Изменение |
 |---|-----------|
-| 1 | **`GET /api/trip/owned`** — поездки текущего пользователя как **владельца** (`ownerId`), фильтр **`timeFilter`**, ответ **`Page<TripDto>`**. |
+| 1 | **`GET /api/trip/owned`** — без **`participant`** — владелец **или** бронь пассажира; **`participant=owner`** / **`participant=passenger`** — только одна роль; **`timeFilter`**; ответ **`Page<TripDto>`**. |
 | 2 | **`PUT /api/trip/{id}`** — только владелец; без смены смысла контракта. |
 | 3 | **`GET /api/booking/trip/{tripId}/overview`** — **`summary`** + **`Page` (unpaged)** с диалогами; массив в **`bookings.content`**. |
 | 4 | **`GET /api/booking/trip/{tripId}`** (`BookingDto`) сохранён параллельно **`/overview`**. |

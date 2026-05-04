@@ -58,9 +58,10 @@ public class TripController {
     public Page<TripDto> ownedTrips(
             @AuthenticationPrincipal ApplicationUserDetails user,
             @RequestParam(name = "timeFilter", required = false, defaultValue = "all") String timeFilter,
+            @RequestParam(name = "participant", required = false) String participant,
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        return tripService.findOwnedTrips(user, timeFilter, pageable);
+        return tripService.findOwnedTrips(user, timeFilter, participant, pageable);
     }
 
     @GetMapping("/{id}")
