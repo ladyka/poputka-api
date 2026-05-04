@@ -50,6 +50,12 @@ public class WebSecurityConfig {
                                 .requestMatchers(HttpMethod.POST, TripController.API_TRIP + "/").authenticated()
 
                                 .requestMatchers(
+                                        "/v3/api-docs",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html")
+                                .permitAll()
+                                .requestMatchers(
                                         TelegramController.API_TELEGRAM,
                                         "/api/user/signup",
                                         "/api/user/info",

@@ -39,3 +39,4 @@ out/
 
 .agents
 .env
+docs/openapi/openapi.json
