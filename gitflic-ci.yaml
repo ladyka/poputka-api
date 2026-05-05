@@ -18,7 +18,7 @@ variables:
     --build-cache
     --stacktrace
 
-image: gradle:8-jdk17
+image: gradle:9.4.1-jdk25
 
 # Кеширует скачанные зависимости и файлы Gradle Wrapper
 # Если размер кеша слишком велик, можно исключить некоторые подкаталоги
