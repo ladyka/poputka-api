@@ -1,4 +1,4 @@
-# Cline Rules for poputka-api
+# Agent Rules for poputka-api
 
 ## Modules versions
 - Java 21

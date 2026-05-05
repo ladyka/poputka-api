@@ -23,7 +23,7 @@ spring:
 
 notification:
   admin:
-    enabled: true
+    enabled: ${NOTIFICATION_ADMIN_ENABLED:false}
     channels: [telegram, email]
     telegramChatId: ${TELEGRAM_CHAT_ID}
     telegramCredentials: ${TELEGRAM_CREDENTIALS:}

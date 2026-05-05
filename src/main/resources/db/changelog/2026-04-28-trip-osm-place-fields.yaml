@@ -1,0 +1,45 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-04-28-trips-add-place-fields
+      author: cursor
+      changes:
+        - addColumn:
+            tableName: trips
+            columns:
+              - column:
+                  name: place_from_city
+                  type: VARCHAR(255)
+              - column:
+                  name: place_from_display_name
+                  type: TEXT
+              - column:
+                  name: place_from_osm_id
+                  type: BIGINT
+              - column:
+                  name: place_from_osm_type
+                  type: VARCHAR(32)
+              - column:
+                  name: place_from_lat
+                  type: DOUBLE
+              - column:
+                  name: place_from_lon
+                  type: DOUBLE
+              - column:
+                  name: place_to_city
+                  type: VARCHAR(255)
+              - column:
+                  name: place_to_display_name
+                  type: TEXT
+              - column:
+                  name: place_to_osm_id
+                  type: BIGINT
+              - column:
+                  name: place_to_osm_type
+                  type: VARCHAR(32)
+              - column:
+                  name: place_to_lat
+                  type: DOUBLE
+              - column:
+                  name: place_to_lon
+                  type: DOUBLE
+

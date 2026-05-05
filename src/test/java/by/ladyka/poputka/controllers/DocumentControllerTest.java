@@ -137,7 +137,7 @@ class DocumentControllerTest extends AbstractIntegrationTest {
         return node;
     }
 
-    private static void assertDocumentDto(
+    private void assertDocumentDto(
             JsonNode node,
             String expectedId,
             String expectedType,

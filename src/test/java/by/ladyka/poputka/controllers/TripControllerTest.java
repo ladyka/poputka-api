@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -50,23 +51,23 @@ class TripControllerTest extends AbstractIntegrationTest {
     @Test
     @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
     void create_shouldReturnOkAndGeneratedId_whenAuthenticated() throws Exception {
-        String dto = tripDtoJson(-1, "A", 100, "relation", "B", 200, "relation",
-                Instant.now().plus(2, ChronoUnit.DAYS), (byte) 3, "desc");
+        String dto = tripDtoJson("A", 100, "relation", "B", 200, "relation",
+                Instant.now().plus(2, ChronoUnit.DAYS), 3, "desc");
 
         mockMvc.perform(post("/api/trip/")
                         .content(dto)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNumber())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.from").value("A"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.to").value("B"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.from.name").value("A"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.to.name").value("B"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.passengers").value(3));
     }
 
     @Test
     void create_shouldReject_whenUnauthenticated() throws Exception {
-        String dto = tripDtoJson(-1, "A", 100, "relation", "B", 200, "relation",
-                Instant.now().plus(2, ChronoUnit.DAYS), (byte) 1, "");
+        String dto = tripDtoJson("A", 100, "relation", "B", 200, "relation",
+                Instant.now().plus(2, ChronoUnit.DAYS), 1, "");
 
         mockMvc.perform(post("/api/trip/")
                         .content(dto)
@@ -79,15 +80,15 @@ class TripControllerTest extends AbstractIntegrationTest {
     void update_shouldUpdateExistingTrip_whenOwner() throws Exception {
         long id = createTripAndGetId("Minsk", "Grodno", Instant.now().plus(3, ChronoUnit.DAYS), (byte) 2, "v1");
 
-        String updateDto = tripDtoJson(id, "Minsk", 1, "relation", "Brest", 2, "relation",
-                Instant.now().plus(4, ChronoUnit.DAYS), (byte) 3, "v2");
+        String updateDto = tripDtoJson("Minsk", 1, "relation", "Brest", 2, "relation",
+                Instant.now().plus(4, ChronoUnit.DAYS), 3, "v2");
 
-        mockMvc.perform(post("/api/trip/")
+        mockMvc.perform(put("/api/trip/{id}", id)
                         .content(updateDto)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(id))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.to").value("Brest"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.to.name").value("Brest"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.passengers").value(3))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.description").value("v2"));
     }
@@ -98,10 +99,10 @@ class TripControllerTest extends AbstractIntegrationTest {
         long tripId = createTripAndGetIdAsUser("testuser", "FOREIGN_FROM", "FOREIGN_TO",
                 Instant.now().plus(3, ChronoUnit.DAYS), (byte) 1, "foreign");
 
-        String updateDto = tripDtoJson(tripId, "FOREIGN_FROM", 1, "relation", "NEW_TO", 2, "relation",
-                Instant.now().plus(4, ChronoUnit.DAYS), (byte) 2, "attempt");
+        String updateDto = tripDtoJson("FOREIGN_FROM", 1, "relation", "NEW_TO", 2, "relation",
+                Instant.now().plus(4, ChronoUnit.DAYS), 2, "attempt");
 
-        mockMvc.perform(post("/api/trip/")
+        mockMvc.perform(put("/api/trip/{id}", tripId)
                         .content(updateDto)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -124,14 +125,17 @@ class TripControllerTest extends AbstractIntegrationTest {
     @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
     void search_shouldReturnOnlyFutureTripsSortedByStart() throws Exception {
         // Past (should be filtered out)
-        createTripAndGetId("F", "T", Instant.now().minus(2, ChronoUnit.HOURS), (byte) 1, "past");
+        createTripEntityAndGetIdWithCities("testuser", "F", "T", "FROM_CITY", "TO_CITY",
+                Instant.now().minus(2, ChronoUnit.HOURS), (byte) 1, "past");
         // Future
-        long id1 = createTripAndGetId("F", "T", Instant.now().plus(2, ChronoUnit.HOURS), (byte) 1, "f1");
-        long id2 = createTripAndGetId("F", "T", Instant.now().plus(3, ChronoUnit.HOURS), (byte) 1, "f2");
+        long id1 = createTripEntityAndGetIdWithCities("testuser", "F1", "T1", "FROM_CITY", "TO_CITY",
+                Instant.now().plus(2, ChronoUnit.HOURS), (byte) 1, "f1");
+        long id2 = createTripEntityAndGetIdWithCities("testuser", "F2", "T2", "FROM_CITY", "TO_CITY",
+                Instant.now().plus(3, ChronoUnit.HOURS), (byte) 1, "f2");
 
         mockMvc.perform(post("/api/trip/search")
                         .content("""
-                                {"placeFrom":"F","placeTo":"T"}
+                                {"placeFrom":"FROM_CITY","placeTo":"TO_CITY"}
                                 """)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -147,18 +151,155 @@ class TripControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void owned_shouldRedirectToLogin_whenAnonymous() throws Exception {
+        mockMvc.perform(get("/api/trip/owned"))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
+    void owned_shouldReturnPagedTrips_filteredByUpcomingPastAll() throws Exception {
+        Instant pastStart = Instant.now().minus(2, ChronoUnit.DAYS);
+        Instant futureStart = Instant.now().plus(2, ChronoUnit.DAYS);
+        createTripEntityAndGetId("testuser", "OWN_PF", "OWN_PT", pastStart, (byte) 1, "past-owned");
+        long futureTripId =
+                createTripEntityAndGetId("testuser", "OWN_FF", "OWN_FT", futureStart, (byte) 2, "future-owned");
+
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("timeFilter", "upcoming"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].id").value(futureTripId));
+
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("timeFilter", "past"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))));
+
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("timeFilter", "all"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(greaterThanOrEqualTo(2))));
+    }
+
+    @Test
+    @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
+    void owned_shouldReturnBadRequest_whenInvalidTimeFilter() throws Exception {
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("timeFilter", "invalid"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
+    void owned_shouldReturnBadRequest_whenInvalidParticipant() throws Exception {
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("participant", "driver"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
+    void owned_shouldReturnBadRequest_whenParticipantIsAllLiteral() throws Exception {
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("participant", "all"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
+    void owned_withoutParticipant_shouldMergeOwnedTripsAndPassengerBookings() throws Exception {
+        Instant ownedStart = Instant.now().plus(3, ChronoUnit.DAYS);
+        Instant othersStart = Instant.now().plus(4, ChronoUnit.DAYS);
+        long ownedTripId = createTripEntityAndGetId("testuser", "MERGE_OWN_F", "MERGE_OWN_T", ownedStart, (byte) 2, "owned-only");
+        long othersTripId = createTripEntityAndGetId("test_helper", "MERGE_OTH_F", "MERGE_OTH_T", othersStart, (byte) 2, "booked-as-passenger");
+        long testuserId = userRepository.findByUsername("testuser").orElseThrow().getId();
+        savePassengerBooking(othersTripId, testuserId, BookingStatus.WAITING);
+
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("timeFilter", "all"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[?(@.id == " + ownedTripId + ")]", hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[?(@.id == " + othersTripId + ")]", hasSize(1)));
+
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("participant", "owner")
+                        .param("timeFilter", "all"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].id").value(ownedTripId));
+
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("participant", "passenger")
+                        .param("timeFilter", "all"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].id").value(othersTripId));
+    }
+
+    @Test
+    @WithUserDetails(value = "test_helper", userDetailsServiceBeanName = "userDetailsService")
+    void owned_asPassenger_shouldReturnPagedTrips_filteredByUpcomingPastAll() throws Exception {
+        Instant pastStart = Instant.now().minus(2, ChronoUnit.DAYS);
+        Instant futureStart = Instant.now().plus(2, ChronoUnit.DAYS);
+        long pastTripId = createTripEntityAndGetId("testuser", "PAS_PF", "PAS_PT", pastStart, (byte) 2, "past-trip");
+        long futureTripId = createTripEntityAndGetId("testuser", "PAS_FF", "PAS_FT", futureStart, (byte) 2, "future-trip");
+
+        long passengerId = userRepository.findByUsername("test_helper").orElseThrow().getId();
+        savePassengerBooking(pastTripId, passengerId, BookingStatus.ACCEPTED);
+        savePassengerBooking(futureTripId, passengerId, BookingStatus.WAITING);
+
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("participant", "passenger")
+                        .param("timeFilter", "upcoming"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].id").value(futureTripId));
+
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("participant", "passenger")
+                        .param("timeFilter", "past"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].id").value(pastTripId));
+
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("participant", "passenger")
+                        .param("timeFilter", "all"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(2)));
+    }
+
+    @Test
+    @WithUserDetails(value = "test_helper", userDetailsServiceBeanName = "userDetailsService")
+    void owned_asPassenger_shouldNotIncludeTripsWithoutBooking() throws Exception {
+        createTripEntityAndGetId("testuser", "NOBOOK_FROM", "NOBOOK_TO",
+                Instant.now().plus(3, ChronoUnit.DAYS), (byte) 2, "no-booking");
+
+        mockMvc.perform(get("/api/trip/owned")
+                        .param("participant", "passenger")
+                        .param("timeFilter", "all"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", hasSize(0)));
+    }
+
+    @Test
     @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
     void popular_shouldReturnRoutesSortedByCountDesc() throws Exception {
-        // A->B x2
-        createTripAndGetId("A", "B", Instant.now().plus(1, ChronoUnit.DAYS), (byte) 1, "r1");
-        createTripAndGetId("A", "B", Instant.now().plus(2, ChronoUnit.DAYS), (byte) 1, "r2");
-        // C->D x1
-        createTripAndGetId("C", "D", Instant.now().plus(3, ChronoUnit.DAYS), (byte) 1, "r3");
+        // CityA->CityB x2
+        createTripEntityAndGetIdWithCities("testuser", "A", "B", "CityA", "CityB",
+                Instant.now().plus(1, ChronoUnit.DAYS), (byte) 1, "r1");
+        createTripEntityAndGetIdWithCities("testuser", "A", "B", "CityA", "CityB",
+                Instant.now().plus(2, ChronoUnit.DAYS), (byte) 1, "r2");
+        // CityC->CityD x1
+        createTripEntityAndGetIdWithCities("testuser", "C", "D", "CityC", "CityD",
+                Instant.now().plus(3, ChronoUnit.DAYS), (byte) 1, "r3");
 
         mockMvc.perform(get("/api/trip/popular"))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeFrom").value("A"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeTo").value("B"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeFrom").value("CityA"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeTo").value("CityB"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].c").value(2));
     }
 
@@ -166,13 +307,15 @@ class TripControllerTest extends AbstractIntegrationTest {
     @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
     void popular_shouldIgnorePastTrips() throws Exception {
         // Same route: one past, one future. Past must be ignored.
-        createTripAndGetId("PAST_A", "PAST_B", Instant.now().minus(2, ChronoUnit.DAYS), (byte) 1, "past");
-        createTripAndGetId("PAST_A", "PAST_B", Instant.now().plus(2, ChronoUnit.DAYS), (byte) 1, "future");
+        createTripEntityAndGetIdWithCities("testuser", "PAST_A", "PAST_B", "PastCityA", "PastCityB",
+                Instant.now().minus(2, ChronoUnit.DAYS), (byte) 1, "past");
+        createTripEntityAndGetIdWithCities("testuser", "PAST_A", "PAST_B", "PastCityA", "PastCityB",
+                Instant.now().plus(2, ChronoUnit.DAYS), (byte) 1, "future");
 
         mockMvc.perform(get("/api/trip/popular"))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeFrom").value("PAST_A"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeTo").value("PAST_B"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeFrom").value("PastCityA"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeTo").value("PastCityB"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].c").value(1));
     }
 
@@ -217,7 +360,7 @@ class TripControllerTest extends AbstractIntegrationTest {
 
     @Test
     void oldTrip_shouldNotBeVisibleForAnonymous() throws Exception {
-        long oldTripId = createTripAndGetIdAsUser("testuser", "OLD4_FROM", "OLD4_TO",
+        long oldTripId = createTripEntityAndGetId("testuser", "OLD4_FROM", "OLD4_TO",
                 Instant.now().minus(20, ChronoUnit.DAYS), (byte) 1, "old4");
 
         mockMvc.perform(get("/api/trip/{id}", oldTripId))
@@ -225,7 +368,7 @@ class TripControllerTest extends AbstractIntegrationTest {
     }
 
     private long createTripAndGetIdAsUser(String username, String from, String to, Instant start, byte passengers, String description) throws Exception {
-        String dto = tripDtoJson(-1, from, 10, "relation", to, 20, "relation", start, passengers, description);
+        String dto = tripDtoJson(from, 10, "relation", to, 20, "relation", start, passengers, description);
         String response = mockMvc.perform(post("/api/trip/")
                         .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(
                                 userDetailsService.loadUserByUsername(username)))
@@ -238,6 +381,14 @@ class TripControllerTest extends AbstractIntegrationTest {
 
         Map<String, Object> node = objectMapper.readValue(response, new TypeReference<>() {});
         return ((Number) node.get("id")).longValue();
+    }
+
+    private void savePassengerBooking(long tripId, long passengerId, BookingStatus status) {
+        Booking booking = new Booking();
+        booking.setTripId(tripId);
+        booking.setPassengerId(passengerId);
+        booking.setBookingStatus(status);
+        bookingRepository.save(booking);
     }
 
     private long createTripEntityAndGetId(String ownerUsername, String from, String to, Instant start, byte passengers, String description) {
@@ -254,8 +405,33 @@ class TripControllerTest extends AbstractIntegrationTest {
         return tripRepository.save(entity).getId();
     }
 
+    private long createTripEntityAndGetIdWithCities(
+            String ownerUsername,
+            String from,
+            String to,
+            String fromCity,
+            String toCity,
+            Instant start,
+            byte passengers,
+            String description
+    ) {
+        long ownerId = userRepository.findByUsername(ownerUsername)
+                .orElseGet(() -> userRepository.findAll().stream().findFirst().orElseThrow())
+                .getId();
+        TripEntity entity = new TripEntity();
+        entity.setOwnerId(ownerId);
+        entity.setPlaceFrom(from);
+        entity.setPlaceTo(to);
+        entity.setPlaceFromCity(fromCity);
+        entity.setPlaceToCity(toCity);
+        entity.setStartTime(start);
+        entity.setPassengers(passengers);
+        entity.setDescription(description);
+        return tripRepository.save(entity).getId();
+    }
+
     private long createTripAndGetId(String from, String to, Instant start, byte passengers, String description) throws Exception {
-        String dto = tripDtoJson(-1, from, 10, "relation", to, 20, "relation", start, passengers, description);
+        String dto = tripDtoJson(from, 10, "relation", to, 20, "relation", start, passengers, description);
         String response = mockMvc.perform(post("/api/trip/")
                         .content(dto)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -268,28 +444,34 @@ class TripControllerTest extends AbstractIntegrationTest {
         return ((Number) node.get("id")).longValue();
     }
 
-    private static String tripDtoJson(long id,
-                                      String fromName, long fromOsmId, String fromOsmType,
+    private static String tripDtoJson(String fromName, long fromOsmId, String fromOsmType,
                                       String toName, long toOsmId, String toOsmType,
                                       Instant start,
-                                      byte passengers,
+                                      int passengers,
                                       String description) {
         return """
                 {
-                  "start": "%s",
+                  "startEpochMillis": %d,
                   "description": "%s",
                   "from": {
                     "name": "%s",
+                    "city": "c1",
+                    "displayName": "d1",
                     "osm_id": %d,
-                    "osm_type": "%s"
+                    "osm_type": "%s",
+                    "lat": 53.0,
+                    "lon": 27.0
                   },
-                  "id": %d,
                   "to": {
                     "name": "%s",
+                    "city": "c2",
+                    "displayName": "d2",
                     "osm_id": %d,
-                    "osm_type": "%s"
+                    "osm_type": "%s",
+                    "lat": 52.0,
+                    "lon": 23.0
                   },
                   "passengers": %d
-                }""".formatted(start.toString(), description, fromName, fromOsmId, fromOsmType, id, toName, toOsmId, toOsmType, passengers);
+                }""".formatted(start.toEpochMilli(), description, fromName, fromOsmId, fromOsmType, toName, toOsmId, toOsmType, passengers);
     }
 }

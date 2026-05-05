@@ -39,6 +39,8 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
+                                // driver's own trips — must be authenticated (before public GET trip/** wildcard)
+                                .requestMatchers(HttpMethod.GET, TripController.API_TRIP + "/owned").authenticated()
                                 // public trip endpoints (read/search)
                                 .requestMatchers(HttpMethod.GET, TripController.API_TRIP + "/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, TripController.API_TRIP + "/search").permitAll()
@@ -47,6 +49,12 @@ public class WebSecurityConfig {
                                 // write trip endpoints (auth required)
                                 .requestMatchers(HttpMethod.POST, TripController.API_TRIP + "/").authenticated()
 
+                                .requestMatchers(
+                                        "/v3/api-docs",
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html")
+                                .permitAll()
                                 .requestMatchers(
                                         TelegramController.API_TELEGRAM,
                                         "/api/user/signup",

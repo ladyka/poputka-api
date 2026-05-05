@@ -3,21 +3,13 @@ package by.ladyka.poputka.data.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-
 @Getter
 @Setter
-public class TripDto {
-    private Long id;
+public class TripCreateRequestDto {
     private OSMPlaceDto from;
     private OSMPlaceDto to;
     private Long startEpochMillis;
-    private BigDecimal price;
-    private String currency;
-    private String car;
     private String description;
     private int passengers;
-    private String owner;
-    private String ownerTelegramUsername;
 }
+
