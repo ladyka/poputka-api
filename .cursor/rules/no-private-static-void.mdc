@@ -1,0 +1,19 @@
+---
+description: Do not create private static void helper methods
+alwaysApply: true
+---
+
+# No `private static void` helpers
+
+Never add methods with signature pattern `private static void ...` anywhere in this codebase (main or test).
+
+## Preferred alternatives
+
+- Use an **instance method** (`private void ...`) on the owning class when it is internal logic.
+- Extract a **dedicated service/component** when the logic is reusable or non-trivial.
+- For mapping logic, prefer **MapStruct** mappers over manual helper methods.
+
+## Rationale
+
+`private static void` helpers tend to hide side effects, make testing harder, and encourage “utility blob” patterns. Prefer dependency-injected, testable collaborators or plain instance methods.
+

@@ -7,13 +7,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BookingRepository extends JpaRepository<Booking, String> {
+public interface BookingRepository extends JpaRepository<Booking, String>, BookingRepositoryCustom {
 
     Integer countByTripIdAndBookingStatus(long tripId, BookingStatus bookingStatus);
+
+    int countByTripIdAndBookingStatusIn(long tripId, Collection<BookingStatus> statuses);
 
     List<Booking> findBookingByTripId(Long tripId);
 

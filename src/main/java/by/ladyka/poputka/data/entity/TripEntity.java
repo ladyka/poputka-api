@@ -8,7 +8,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 
 @Getter
@@ -23,6 +22,19 @@ public class TripEntity extends Auditable {
 
     private String placeFrom;
     private String placeTo;
+    private String placeFromCity;
+    private String placeFromDisplayName;
+    private Long placeFromOsmId;
+    private String placeFromOsmType;
+    private Double placeFromLat;
+    private Double placeFromLon;
+
+    private String placeToCity;
+    private String placeToDisplayName;
+    private Long placeToOsmId;
+    private String placeToOsmType;
+    private Double placeToLat;
+    private Double placeToLon;
     private long start;
 //    private BigDecimal price = BigDecimal.ZERO;
 //    private String currency = "NONE";
