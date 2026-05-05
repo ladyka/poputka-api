@@ -96,7 +96,7 @@ public class TripService {
     }
 
     public List<TripDto> search(TripSearchRequest tripSearchRequest) {
-        return tripRepository.findAllByPlaceFromAndPlaceToAndStartIsGreaterThan(
+        return tripRepository.findAllByPlaceFromCityAndPlaceToCityAndStartIsGreaterThan(
                         tripSearchRequest.getPlaceFrom(),
                         tripSearchRequest.getPlaceTo(),
                         Instant.now().toEpochMilli(),

@@ -125,14 +125,17 @@ class TripControllerTest extends AbstractIntegrationTest {
     @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
     void search_shouldReturnOnlyFutureTripsSortedByStart() throws Exception {
         // Past (should be filtered out)
-        createTripEntityAndGetId("testuser", "F", "T", Instant.now().minus(2, ChronoUnit.HOURS), (byte) 1, "past");
+        createTripEntityAndGetIdWithCities("testuser", "F", "T", "FROM_CITY", "TO_CITY",
+                Instant.now().minus(2, ChronoUnit.HOURS), (byte) 1, "past");
         // Future
-        long id1 = createTripAndGetId("F", "T", Instant.now().plus(2, ChronoUnit.HOURS), (byte) 1, "f1");
-        long id2 = createTripAndGetId("F", "T", Instant.now().plus(3, ChronoUnit.HOURS), (byte) 1, "f2");
+        long id1 = createTripEntityAndGetIdWithCities("testuser", "F1", "T1", "FROM_CITY", "TO_CITY",
+                Instant.now().plus(2, ChronoUnit.HOURS), (byte) 1, "f1");
+        long id2 = createTripEntityAndGetIdWithCities("testuser", "F2", "T2", "FROM_CITY", "TO_CITY",
+                Instant.now().plus(3, ChronoUnit.HOURS), (byte) 1, "f2");
 
         mockMvc.perform(post("/api/trip/search")
                         .content("""
-                                {"placeFrom":"F","placeTo":"T"}
+                                {"placeFrom":"FROM_CITY","placeTo":"TO_CITY"}
                                 """)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -284,16 +287,19 @@ class TripControllerTest extends AbstractIntegrationTest {
     @Test
     @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
     void popular_shouldReturnRoutesSortedByCountDesc() throws Exception {
-        // A->B x2
-        createTripAndGetId("A", "B", Instant.now().plus(1, ChronoUnit.DAYS), (byte) 1, "r1");
-        createTripAndGetId("A", "B", Instant.now().plus(2, ChronoUnit.DAYS), (byte) 1, "r2");
-        // C->D x1
-        createTripAndGetId("C", "D", Instant.now().plus(3, ChronoUnit.DAYS), (byte) 1, "r3");
+        // CityA->CityB x2
+        createTripEntityAndGetIdWithCities("testuser", "A", "B", "CityA", "CityB",
+                Instant.now().plus(1, ChronoUnit.DAYS), (byte) 1, "r1");
+        createTripEntityAndGetIdWithCities("testuser", "A", "B", "CityA", "CityB",
+                Instant.now().plus(2, ChronoUnit.DAYS), (byte) 1, "r2");
+        // CityC->CityD x1
+        createTripEntityAndGetIdWithCities("testuser", "C", "D", "CityC", "CityD",
+                Instant.now().plus(3, ChronoUnit.DAYS), (byte) 1, "r3");
 
         mockMvc.perform(get("/api/trip/popular"))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeFrom").value("A"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeTo").value("B"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeFrom").value("CityA"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeTo").value("CityB"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].c").value(2));
     }
 
@@ -301,13 +307,15 @@ class TripControllerTest extends AbstractIntegrationTest {
     @WithUserDetails(value = "testuser", userDetailsServiceBeanName = "userDetailsService")
     void popular_shouldIgnorePastTrips() throws Exception {
         // Same route: one past, one future. Past must be ignored.
-        createTripEntityAndGetId("testuser", "PAST_A", "PAST_B", Instant.now().minus(2, ChronoUnit.DAYS), (byte) 1, "past");
-        createTripAndGetId("PAST_A", "PAST_B", Instant.now().plus(2, ChronoUnit.DAYS), (byte) 1, "future");
+        createTripEntityAndGetIdWithCities("testuser", "PAST_A", "PAST_B", "PastCityA", "PastCityB",
+                Instant.now().minus(2, ChronoUnit.DAYS), (byte) 1, "past");
+        createTripEntityAndGetIdWithCities("testuser", "PAST_A", "PAST_B", "PastCityA", "PastCityB",
+                Instant.now().plus(2, ChronoUnit.DAYS), (byte) 1, "future");
 
         mockMvc.perform(get("/api/trip/popular"))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeFrom").value("PAST_A"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeTo").value("PAST_B"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeFrom").value("PastCityA"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].placeTo").value("PastCityB"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].c").value(1));
     }
 
@@ -391,6 +399,31 @@ class TripControllerTest extends AbstractIntegrationTest {
         entity.setOwnerId(ownerId);
         entity.setPlaceFrom(from);
         entity.setPlaceTo(to);
+        entity.setStartTime(start);
+        entity.setPassengers(passengers);
+        entity.setDescription(description);
+        return tripRepository.save(entity).getId();
+    }
+
+    private long createTripEntityAndGetIdWithCities(
+            String ownerUsername,
+            String from,
+            String to,
+            String fromCity,
+            String toCity,
+            Instant start,
+            byte passengers,
+            String description
+    ) {
+        long ownerId = userRepository.findByUsername(ownerUsername)
+                .orElseGet(() -> userRepository.findAll().stream().findFirst().orElseThrow())
+                .getId();
+        TripEntity entity = new TripEntity();
+        entity.setOwnerId(ownerId);
+        entity.setPlaceFrom(from);
+        entity.setPlaceTo(to);
+        entity.setPlaceFromCity(fromCity);
+        entity.setPlaceToCity(toCity);
         entity.setStartTime(start);
         entity.setPassengers(passengers);
         entity.setDescription(description);

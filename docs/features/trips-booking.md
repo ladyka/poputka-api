@@ -130,7 +130,7 @@
     - недопустимое значение — **`400 BAD_REQUEST`**.
   - **Ответ**: `TripBookingOverviewResponseDto`:
     - **`summary`** — счётчики **по всей поездке**, **не зависят** от `bookingScope`: `tripId`, `passengerSeatCapacity`, `occupiedSeats`, `freePassengerSeats`, `full` (`occupiedSeats` считается по статусам «занятое место», см. выше).
-    - **`bookings`** — Spring Data **`Page<TripBookingOverviewItemDto>`** в режиме **`Pageable.unpaged()`** (за один запрос отдаются **все** строки, попавшие под `bookingScope`). В JSON элементы находятся в **`bookings.content`**; полезные для UI метаданные: **`bookings.totalElements`**. При стандартной сериализации Jackson могут присутствовать и «служебные» ключи страницы (`pageable`, `sort`, …); при необходимости контракт можно упростить на бекенде отдельной настройкой Jackson.
+    - **`bookings`** — Spring Data **`PagedModel<TripBookingOverviewItemDto>`** в режиме **`Pageable.unpaged()`** (за один запрос отдаются **все** строки, попавшие под `bookingScope`). В JSON элементы находятся в **`bookings.content`**; полезные для UI метаданные: **`bookings.page.totalElements`** (и `bookings.page.size/number/totalPages`).
     - Поле **`version` поездки** в этом ответе **не возвращается** (текущие договорённости).
   - **`TripBookingOverviewItemDto`**: `bookingId`, `bookingStatus`, **`passengerDisplayName`** (только ФИО из профиля), превью последнего сообщения (`lastMessagePayload`, `messageStatus`, `lastMessageTime`). Если сообщений в чате ещё нет, часть полей превью может быть **`null`**. **`username`/email/Telegram` не возвращаются**.
   - Сообщения чата построчно: по-прежнему **`GET /api/booking/messages/{bookingId}`**.
@@ -157,13 +157,13 @@
 
 - Значения «занято / свободно / полная машина» брать только из **`summary`** в **`GET .../overview`**, не пересчитывать по отфильтрованному **`bookings.content`**.
 - Список строк под **`bookingScope`** приходит **одним** запросом; дополнительную группировку/сортировку можно делать на клиенте.
-- По **`GET /api/trip/owned`** использовать **`content`** страницы `Page<TripDto>` как основной массив списка; «все роли» — **не передавать** `participant`, водитель — **`participant=owner`**, пассажир — **`participant=passenger`** (см. `trips.md`).
+- По **`GET /api/trip/owned`** использовать **`content`** как основной массив списка; «все роли» — **не передавать** `participant`, водитель — **`participant=owner`**, пассажир — **`participant=passenger`** (см. `trips.md`). Метаданные страницы лежат в `page`.
 
 ## Changelog (контракт «мои поездки и обзор водителя»)
 
 | № | Изменение |
 |---|-----------|
-| 1 | **`GET /api/trip/owned`** — без **`participant`** — владелец **или** бронь пассажира; **`participant=owner`** / **`participant=passenger`** — только одна роль; **`timeFilter`**; ответ **`Page<TripDto>`**. |
+| 1 | **`GET /api/trip/owned`** — без **`participant`** — владелец **или** бронь пассажира; **`participant=owner`** / **`participant=passenger`** — только одна роль; **`timeFilter`**; ответ **`PagedModel<TripDto>`**. |
 | 2 | **`PUT /api/trip/{id}`** — только владелец; без смены смысла контракта. |
 | 3 | **`GET /api/booking/trip/{tripId}/overview`** — **`summary`** + **`Page` (unpaged)** с диалогами; массив в **`bookings.content`**. |
 | 4 | **`GET /api/booking/trip/{tripId}`** (`BookingDto`) сохранён параллельно **`/overview`**. |

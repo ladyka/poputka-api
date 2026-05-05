@@ -239,7 +239,7 @@ class BookingControllerTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.summary.full").value(false))
                 .andExpect(jsonPath("$.bookings.content[0].bookingId").value(bookingId))
                 .andExpect(jsonPath("$.bookings.content[0].passengerDisplayName").exists())
-                .andExpect(jsonPath("$.bookings.totalElements").value(1));
+                .andExpect(jsonPath("$.bookings.page.totalElements").value(1));
 
         mockMvc.perform(post("/api/booking/{bookingId}/status", bookingId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -278,12 +278,12 @@ class BookingControllerTest extends AbstractIntegrationTest {
         mockMvc.perform(get("/api/booking/trip/{tripId}/overview", tripId)
                         .param("bookingScope", "active"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.bookings.totalElements").value(0));
+                .andExpect(jsonPath("$.bookings.page.totalElements").value(0));
 
         mockMvc.perform(get("/api/booking/trip/{tripId}/overview", tripId)
                         .param("bookingScope", "archived"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.bookings.totalElements").value(1))
+                .andExpect(jsonPath("$.bookings.page.totalElements").value(1))
                 .andExpect(jsonPath("$.bookings.content[0].bookingId").value(bookingId));
     }
 

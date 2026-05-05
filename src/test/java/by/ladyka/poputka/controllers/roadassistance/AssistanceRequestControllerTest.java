@@ -33,15 +33,11 @@ class AssistanceRequestControllerTest extends AbstractIntegrationTest {
                         .param("radiusKm", "10"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").isArray())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.pageable").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.totalElements").isNumber())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").isNumber())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.size").isNumber())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.number").isNumber())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.sort").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.first").isBoolean())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.last").isBoolean())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.numberOfElements").isNumber());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.page").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.page.totalElements").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.page.totalPages").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.page.size").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.page.number").isNumber());
     }
 
     @Test
@@ -86,8 +82,7 @@ class AssistanceRequestControllerTest extends AbstractIntegrationTest {
                         .param("radiusKm", "1"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content").isArray())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.totalElements").value(0))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.numberOfElements").value(0));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.page.totalElements").value(0));
     }
 
     @Test
@@ -106,9 +101,9 @@ class AssistanceRequestControllerTest extends AbstractIntegrationTest {
                         .param("size", "2"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(2))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.size").value(2))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.number").value(0))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.totalElements").isNumber());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.page.size").value(2))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.page.number").value(0))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.page.totalElements").isNumber());
     }
 
     @Test

@@ -31,7 +31,7 @@
 
 - **URL**: `POST /api/trip/search`
 - **Auth**: публичный
-- **Body**: `TripSearchRequest` (`placeFrom`, `placeTo`)
+- **Body**: `TripSearchRequest` (`placeFrom`, `placeTo`) — **названия городов** (ищем по `trips.place_from_city`, `trips.place_to_city`)
 - **Поведение**:
   - возвращаются только поездки с `start > now` (по времени старта)
   - сортировка по времени старта (возрастание)
@@ -50,7 +50,9 @@
     - `past`: `trip.start < now`
     - некорректное значение → **400 BAD_REQUEST**
   - параметры **`Pageable`** (`page`, `size`, при необходимости `sort`); если **`sort`** не указан — по умолчанию сортировка по **`start` по убыванию**.
-- **Ответ**: **`Page<TripDto>`** (JSON Spring Data Page: ключ **`content`** — массив поездок, плюс `totalElements`, `number`, …).
+- **Ответ**: **`PagedModel<TripDto>`** (стабильная JSON-форма Spring Data):
+  - массив поездок: **`content`**
+  - метаданные страницы: **`page`** (`size`, `number`, `totalElements`, `totalPages`)
 
 ### Получение поездки по id
 
@@ -68,6 +70,7 @@
 - **Ответ**: список `PopularRouteDto` (`placeFrom`, `placeTo`, `c`)
 - **Поведение**:
   - учитываются только поездки из будущего (по времени старта)
+  - агрегация идёт **по городам** (`trips.place_from_city`, `trips.place_to_city`), а не по названию конкретного места
   - список отсортирован по `c` по убыванию
 
 ## Правила доступа к “старым” поездкам

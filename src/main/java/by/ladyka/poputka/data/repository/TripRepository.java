@@ -51,8 +51,20 @@ public interface TripRepository extends JpaRepository<TripEntity, Long> {
             @Param("startMaxExclusiveEpochMillis") long startMaxExclusiveEpochMillis,
             Pageable pageable);
 
-    Page<TripEntity> findAllByPlaceFromAndPlaceToAndStartIsGreaterThan(String placeFrom, String placeTo, Long start, Pageable pageable);
+    Page<TripEntity> findAllByPlaceFromCityAndPlaceToCityAndStartIsGreaterThan(
+            String placeFromCity,
+            String placeToCity,
+            Long start,
+            Pageable pageable);
 
-    @Query(value = "select  t.place_from, t.place_to, count(*) as c from trips t where t.start > (SELECT extract(epoch from now() at time zone 'utc'))*1000 group by t.place_from, t.place_to  order by c;", nativeQuery = true)
+    @Query(value = """
+            SELECT t.place_from_city, t.place_to_city, count(*) AS c
+            FROM trips t
+            WHERE t.start > (SELECT extract(epoch from now() at time zone 'utc')) * 1000
+              AND t.place_from_city IS NOT NULL
+              AND t.place_to_city IS NOT NULL
+            GROUP BY t.place_from_city, t.place_to_city
+            ORDER BY c DESC;
+            """, nativeQuery = true)
     List<Object[]> findTop10Routes();
 }
