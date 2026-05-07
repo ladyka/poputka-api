@@ -16,5 +16,6 @@ public class BookingMessageDto {
     private boolean isMyMessage;
     private MessagePayload payload;
     private MessageStatus messageStatus;
+    private Instant createdDatetime;
     private Instant modifiedDatetime;
 }

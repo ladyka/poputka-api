@@ -133,6 +133,7 @@ public class BookingService {
                             .isMyMessage(Objects.equals(bookingMessage.getSenderId(), user.getId()))
                             .payload(bookingMessage.getPayload())
                             .messageStatus(bookingMessage.getMessageStatus())
+                            .createdDatetime(bookingMessage.getCreated())
                             .modifiedDatetime(bookingMessage.getModified())
                             .build())
                     .toList();
