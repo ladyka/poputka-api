@@ -25,7 +25,7 @@ Allowed transitions in current backend logic:
 
 ## Authentication & ownership
 
-All endpoints use the authenticated user (via `ApplicationUserDetails`) and operate on **their** documents only.
+All endpoints require a valid **Bearer JWT** (`Authorization: Bearer <accessToken>`); see `docs/features/auth.md`. The backend resolves the current user (e.g. `ApplicationUserDetails`) and operates on **their** documents only.
 Update/submit/upload are rejected if the document does not belong to the current user.
 
 ## API

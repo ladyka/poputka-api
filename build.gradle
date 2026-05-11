@@ -81,6 +81,17 @@ tasks.named('test') {
     finalizedBy jacocoTestCoverageVerification
 }
 
+tasks.register('generateOpenApiJson', Test) {
+    description = 'Writes docs/openapi/openapi.json from SpringDoc (tag openapi-doc only).'
+    group = 'documentation'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    systemProperty 'spring.profiles.active', 'test'
+    useJUnitPlatform {
+        includeTags 'openapi-doc'
+    }
+}
+
 jacocoTestReport {
     dependsOn test
 

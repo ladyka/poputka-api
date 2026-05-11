@@ -1,5 +1,7 @@
 # Authentication (JWT + Google + Apple)
 
+Оглавление фич: [README.md](./README.md).
+
 The API uses **stateless** authentication: **Bearer access JWT** on protected routes, with **refresh tokens** stored server-side (hashed) and delivered to clients via **JSON** and/or **HttpOnly cookie**.
 
 ## Endpoints
@@ -62,9 +64,17 @@ poputka:
 
 ## Account linking
 
-- **Implicit**: happens on `/api/auth/google` when email is verified and matches an existing local user.
-- **Explicit**: `POST /api/auth/google/link` while authenticated with a valid **access** JWT; Google email must equal the account email.
+**Google**
+
+- **Implicit**: on `/api/auth/google` when `email_verified` and an existing user has the same email → auto-link `google_sub`.
+- **Explicit**: `POST /api/auth/google/link` with Bearer; Google email must equal the account email.
 - **Unlink**: `POST /api/auth/google/unlink` with `{ "password": "<local password>" }`.
+
+**Apple**
+
+- **Implicit**: on `/api/auth/apple` when the token contains a **verified** email and it matches an existing user → auto-link `apple_sub` (first-time / «Share My Email» flows).
+- **Explicit**: `POST /api/auth/apple/link` with Bearer; email in the identity token must match the account email.
+- **Unlink**: `POST /api/auth/apple/unlink` with `{ "password": "<local password>" }`.
 
 ## User model
 

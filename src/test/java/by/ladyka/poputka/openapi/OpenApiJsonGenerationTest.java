@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Writes springdoc OpenAPI 3 JSON to a file for CI or local use.
  * Run the full test suite without this class (excluded by tag), or explicitly:
- * {@code ./gradlew generateOpenApiJson}
+ * {@code ./gradlew generateOpenApiJson} (Gradle task; tag {@code openapi-doc} only)
  */
 @SpringBootTest
 @AutoConfigureMockMvc
