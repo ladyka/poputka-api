@@ -23,9 +23,9 @@ class IndexPageControllerTest {
 
     @Test
     @WithAnonymousUser
-    void index_shouldReturnUsername_whenUserAnonymous() throws Exception {
+    void index_shouldReturn401_whenUserAnonymous() throws Exception {
         mockMvc.perform(get("/"))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

@@ -53,6 +53,20 @@ public class PoputkaUser implements UserDetails {
     private Boolean requiresModeration = false;
     private Boolean isBlocked = false;
 
+    /** Google OIDC {@code sub} claim; uniquely identifies the Google account. */
+    @Column(name = "google_sub")
+    private String googleSub;
+
+    /** Email reported by Google (may differ in case from username). */
+    @Column(name = "google_email")
+    private String googleEmail;
+
+    /** Stable Apple {@code sub} for Sign in with Apple. */
+    @Column(name = "apple_sub")
+    private String appleSub;
+
+    @Column(name = "apple_email")
+    private String appleEmail;
 
     // AUDIT
     @Column(name = "created_datetime", nullable = false)

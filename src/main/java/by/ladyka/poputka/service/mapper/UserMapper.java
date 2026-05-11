@@ -20,6 +20,10 @@ public class UserMapper {
         userInfoDto.setCar(user.getCar());
         userInfoDto.setTelegramId(user.getTelegramId());
         userInfoDto.setTelegramUsername(user.getTelegramUsername());
+        userInfoDto.setGoogleLinked(
+                user.getGoogleSub() != null && !user.getGoogleSub().isBlank());
+        userInfoDto.setAppleLinked(
+                user.getAppleSub() != null && !user.getAppleSub().isBlank());
         return userInfoDto;
     }
 

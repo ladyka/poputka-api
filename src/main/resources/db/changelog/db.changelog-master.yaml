@@ -544,3 +544,9 @@ databaseChangeLog:
 
 - include:
     file: classpath:db/changelog/2026-08-14-documents.yaml
+
+- include:
+    file: classpath:db/changelog/2026-05-05-google-jwt-auth.yaml
+
+- include:
+    file: classpath:db/changelog/2026-05-11-apple-sign-in-auth.yaml

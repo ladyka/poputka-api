@@ -72,7 +72,7 @@ class TripControllerTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/api/trip/")
                         .content(dto)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -151,9 +151,9 @@ class TripControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void owned_shouldRedirectToLogin_whenAnonymous() throws Exception {
+    void owned_shouldReturn401_whenAnonymous() throws Exception {
         mockMvc.perform(get("/api/trip/owned"))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

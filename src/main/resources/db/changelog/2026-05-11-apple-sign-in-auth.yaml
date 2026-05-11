@@ -1,0 +1,22 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-05-11-users-apple-columns
+      author: poputka-api
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: apple_sub
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: apple_email
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+        - addUniqueConstraint:
+            tableName: users
+            columnNames: apple_sub
+            constraintName: uk_users_apple_sub
