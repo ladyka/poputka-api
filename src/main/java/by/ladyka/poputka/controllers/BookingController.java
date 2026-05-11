@@ -8,7 +8,6 @@ import by.ladyka.poputka.data.dto.BookingMessageDto;
 import by.ladyka.poputka.data.dto.BookingStatusChangeRequestDto;
 import by.ladyka.poputka.data.dto.bookingTripOverview.TripBookingOverviewResponseDto;
 import by.ladyka.poputka.data.dto.MessageCreateDto;
-import by.ladyka.poputka.data.dto.MessageDto;
 import by.ladyka.poputka.data.enums.MessageStatus;
 import by.ladyka.poputka.service.BookingService;
 import by.ladyka.poputka.service.MessageService;
@@ -88,7 +87,7 @@ public class BookingController {
     }
 
     @PutMapping({"/messages"})
-    public MessageDto sendMessage(Principal principal, @RequestBody MessageCreateDto messageCreateDto) {
+    public BookingMessageDto sendMessage(Principal principal, @RequestBody MessageCreateDto messageCreateDto) {
         boolean hasPayload = messageCreateDto.getPayload() != null;
         boolean hasText = messageCreateDto.getContent() != null && !messageCreateDto.getContent().isBlank();
         if (hasPayload || hasText) {

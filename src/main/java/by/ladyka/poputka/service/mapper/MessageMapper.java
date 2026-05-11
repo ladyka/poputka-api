@@ -1,7 +1,7 @@
 package by.ladyka.poputka.service.mapper;
 
+import by.ladyka.poputka.data.dto.BookingMessageDto;
 import by.ladyka.poputka.data.dto.MessageCreateDto;
-import by.ladyka.poputka.data.dto.MessageDto;
 import by.ladyka.poputka.data.entity.BookingMessage;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = {MessagePayloadResolver.class})
 public interface MessageMapper {
 
-    MessageDto toDto(BookingMessage bookingMessage);
+    BookingMessageDto toDto(BookingMessage bookingMessage, boolean myMessage);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "senderId", expression = "java(senderId)")

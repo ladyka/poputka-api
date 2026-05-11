@@ -21,7 +21,7 @@ import by.ladyka.poputka.data.repository.BookingRepository;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
 import by.ladyka.poputka.data.repository.TripRepository;
 import by.ladyka.poputka.service.mapper.BookingMapper;
-import by.ladyka.poputka.service.MessageService;
+import by.ladyka.poputka.service.mapper.MessageMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +56,7 @@ public class BookingService {
     private final BookingMessageRepository bookingMessageRepository;
     private final ObjectMapper objectMapper;
     private final MessageService messageService;
+    private final MessageMapper messageMapper;
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public BookingDto createBooking(String username, BookingCreateDto bookingCreateDto) {
@@ -127,15 +128,7 @@ public class BookingService {
                             bookingMessageRepository.save(message);
                         }
                     })
-                    .map(bookingMessage -> BookingMessageDto
-                            .builder()
-                            .id(bookingMessage.getId())
-                            .isMyMessage(Objects.equals(bookingMessage.getSenderId(), user.getId()))
-                            .payload(bookingMessage.getPayload())
-                            .messageStatus(bookingMessage.getMessageStatus())
-                            .createdDatetime(bookingMessage.getCreated())
-                            .modifiedDatetime(bookingMessage.getModified())
-                            .build())
+                    .map(bookingMessage -> messageMapper.toDto(bookingMessage, Objects.equals(bookingMessage.getSenderId(), user.getId())))
                     .toList();
         }
         throw new ResponseStatusException(FORBIDDEN);

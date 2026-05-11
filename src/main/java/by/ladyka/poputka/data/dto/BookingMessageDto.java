@@ -10,12 +10,11 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@Builder
 public class BookingMessageDto {
     private String id;
     private boolean isMyMessage;
     private MessagePayload payload;
     private MessageStatus messageStatus;
-    private Instant createdDatetime;
-    private Instant modifiedDatetime;
+    private Instant created;
+    private Instant modified;
 }
