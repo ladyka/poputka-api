@@ -12,7 +12,7 @@ ext {
     mapstructVersion = '1.6.3'
     lombokMapstructBindingVersion = '0.2.0'
     springdocOpenapiStarterWebmvcUIVersion = '3.0.3'
-    jsonwebtokenVersion = '0.12.6'
+    jsonwebtokenVersion = '0.13.0'
 }
 
 jacoco {
