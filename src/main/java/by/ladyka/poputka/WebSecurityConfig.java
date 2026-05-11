@@ -1,20 +1,25 @@
 package by.ladyka.poputka;
 
+import by.ladyka.poputka.auth.JwtAuthenticationFilter;
+import by.ladyka.poputka.auth.JwtTokenService;
 import by.ladyka.poputka.controllers.TelegramController;
 import by.ladyka.poputka.controllers.TripController;
 import by.ladyka.poputka.data.entity.PoputkaUser;
 import by.ladyka.poputka.data.repository.PoputkaUserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,7 +27,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -36,8 +41,19 @@ public class WebSecurityConfig {
     private final PoputkaUserRepository poputkaUserRepository;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenService jwtTokenService, UserDetailsService userDetailsService) {
+        return new JwtAuthenticationFilter(jwtTokenService, userDetailsService);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((requests) -> requests
                                 // driver's own trips — must be authenticated (before public GET trip/** wildcard)
                                 .requestMatchers(HttpMethod.GET, TripController.API_TRIP + "/owned").authenticated()
@@ -56,6 +72,13 @@ public class WebSecurityConfig {
                                         "/swagger-ui.html")
                                 .permitAll()
                                 .requestMatchers(
+                                        "/api/auth/login",
+                                        "/api/auth/google",
+                                        "/api/auth/apple",
+                                        "/api/auth/refresh",
+                                        "/api/auth/logout")
+                                        .permitAll()
+                                .requestMatchers(
                                         TelegramController.API_TELEGRAM,
                                         "/api/user/signup",
                                         "/api/user/info",
@@ -69,8 +92,21 @@ public class WebSecurityConfig {
                                                 ).permitAll()
                                 .anyRequest().authenticated()
                                       )
-                .formLogin(Customizer.withDefaults())
-                .logout(LogoutConfigurer::permitAll);
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .exceptionHandling(e -> e.authenticationEntryPoint(
+                                (rq, rp, ex) -> {
+                                    rp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                    rp.setContentType("application/json;charset=UTF-8");
+                                    rp.getWriter().write("{\"error\":\"unauthorized\"}");
+                                })
+                        .accessDeniedHandler((rq, rp, ex) -> {
+                            rp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            rp.setContentType("application/json;charset=UTF-8");
+                            rp.getWriter().write("{\"error\":\"forbidden\"}");
+                        }))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

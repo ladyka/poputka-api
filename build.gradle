@@ -6,17 +6,25 @@ plugins {
 }
 
 group = 'by.ladyka'
-version = '0.0.5'
+version = '0.3.0'
 
 ext {
     mapstructVersion = '1.6.3'
     lombokMapstructBindingVersion = '0.2.0'
     springdocOpenapiStarterWebmvcUIVersion = '3.0.3'
+    jsonwebtokenVersion = '0.13.0'
 }
 
 jacoco {
     toolVersion = '0.8.13'
 }
+
+def jacocoExcludes = [
+        '**/by/ladyka/poputka/controllers/roadassistance/**',
+        '**/by/ladyka/poputka/data/entity/roadassistance/**',
+        '**/by/ladyka/poputka/service/mapper/roadassistance/**',
+        '**/by/ladyka/poputka/service/roadassistance/**',
+]
 
 java {
     toolchain {
@@ -42,7 +50,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation "io.jsonwebtoken:jjwt-api:${jsonwebtokenVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jsonwebtokenVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jsonwebtokenVersion}"
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.postgresql:postgresql'
 
@@ -72,6 +84,12 @@ tasks.named('test') {
 jacocoTestReport {
     dependsOn test
 
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: jacocoExcludes)
+        }))
+    }
+
     reports {
         html.required = true
         html.outputLocation = layout.buildDirectory.dir('reports/jacoco/test/html')
@@ -84,12 +102,18 @@ jacocoTestReport {
 jacocoTestCoverageVerification {
     dependsOn test
 
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: jacocoExcludes)
+        }))
+    }
+
     violationRules {
         rule {
             limit {
                 counter = 'INSTRUCTION'
                 value = 'COVEREDRATIO'
-                minimum = 0.5
+                minimum = 0.6
             }
         }
     }

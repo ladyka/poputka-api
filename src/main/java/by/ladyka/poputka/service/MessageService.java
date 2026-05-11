@@ -1,7 +1,7 @@
 package by.ladyka.poputka.service;
 
+import by.ladyka.poputka.data.dto.BookingMessageDto;
 import by.ladyka.poputka.data.dto.MessageCreateDto;
-import by.ladyka.poputka.data.dto.MessageDto;
 import by.ladyka.poputka.data.entity.Booking;
 import by.ladyka.poputka.data.entity.BookingMessage;
 import by.ladyka.poputka.data.entity.PoputkaUser;
@@ -28,7 +28,7 @@ public class MessageService {
     private final MessageMapper mapper;
 
     @Transactional
-    public MessageDto sendMessage(String username, MessageCreateDto dto) {
+    public BookingMessageDto sendMessage(String username, MessageCreateDto dto) {
 
         PoputkaUser sender = poputkaUserRepository.findByUsername(username).orElseThrow();
         Booking booking = bookingRepository.findById(dto.getBookingId()).orElseThrow();
@@ -38,7 +38,7 @@ public class MessageService {
 
             BookingMessage bookingMessage = mapper.toEntity(dto, sender.getId());
             bookingMessage = repository.save(bookingMessage);
-            return mapper.toDto(bookingMessage);
+            return mapper.toDto(bookingMessage, true);
         }
 
         throw new RuntimeException("Forbidden");

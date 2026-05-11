@@ -23,4 +23,10 @@ public class UserInfoDto {
     // Поля для модуля помощи на дороге
     private Boolean readyToHelp = false;
     private BigDecimal rating = BigDecimal.ZERO;
+
+    /** {@code true} если аккаунт связан с Google (есть сохранённый {@code google_sub}). */
+    private boolean googleLinked;
+
+    /** {@code true} если аккаунт связан с Apple (есть сохранённый {@code apple_sub}). */
+    private boolean appleLinked;
 }

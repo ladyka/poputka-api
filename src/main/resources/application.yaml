@@ -35,5 +35,13 @@ application:
   storage:
     documents: ${APPLICATION_STORAGE_DOCUMENTS}
 poputka:
+  auth:
+    jwt-secret: ${JWT_SECRET:dev-jwt-secret-change-me-32bytes-min}
+    access-token-validity-minutes: 15
+    refresh-token-validity-days: 30
+    google-client-id: ${GOOGLE_CLIENT_ID:}
+    apple-audience: ${APPLE_AUDIENCE:}
+    refresh-cookie-name: refreshToken
+    refresh-cookie-path: /api/auth
   trip-booking-review:
     moderator-usernames: ${MODERATOR_USERNAMES}
