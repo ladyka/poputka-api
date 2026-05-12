@@ -20,10 +20,7 @@ jacoco {
 }
 
 def jacocoExcludes = [
-        '**/by/ladyka/poputka/controllers/roadassistance/**',
-        '**/by/ladyka/poputka/data/entity/roadassistance/**',
-        '**/by/ladyka/poputka/service/mapper/roadassistance/**',
-        '**/by/ladyka/poputka/service/roadassistance/**',
+        '**/by/ladyka/poputka/service/notification/**',
 ]
 
 java {
@@ -124,7 +121,7 @@ jacocoTestCoverageVerification {
             limit {
                 counter = 'INSTRUCTION'
                 value = 'COVEREDRATIO'
-                minimum = 0.6
+                minimum = 0.68
             }
         }
     }

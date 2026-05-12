@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -42,16 +43,8 @@ public class PoputkaUser implements UserDetails {
     private long telegramId;
     private String telegramUsername;
 
-    // Поля для модуля помощи на дороге
-    private Boolean readyToHelp = false;
-    private Integer helpRadius = 10;
-    private BigDecimal rating = BigDecimal.ZERO;
-
     @Column(name = "trip_rating", nullable = false)
     private BigDecimal tripRating = BigDecimal.ZERO;
-
-    private Boolean requiresModeration = false;
-    private Boolean isBlocked = false;
 
     /** Google OIDC {@code sub} claim; uniquely identifies the Google account. */
     @Column(name = "google_sub")
@@ -81,6 +74,7 @@ public class PoputkaUser implements UserDetails {
     @Version
     private short version;
 
+    @NullMarked
     @Override
     public Collection<GrantedAuthority> getAuthorities() {
         return List.of((GrantedAuthority) () -> "USER");

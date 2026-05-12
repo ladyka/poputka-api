@@ -546,6 +546,9 @@ databaseChangeLog:
     file: classpath:db/changelog/2026-08-14-documents.yaml
 
 - include:
+    file: classpath:db/changelog/2026-09-remove-roadassistance.yaml
+
+- include:
     file: classpath:db/changelog/2026-05-05-google-jwt-auth.yaml
 
 - include:

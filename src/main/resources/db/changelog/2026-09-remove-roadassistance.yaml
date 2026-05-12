@@ -1,0 +1,96 @@
+databaseChangeLog:
+- changeSet:
+    id: remove-roadassistance-1
+    author: ai-assistant
+    comment: Удаление индексов для таблиц модуля помощи
+    changes:
+    - dropIndex:
+        tableName: assistance_requests
+        indexName: idx_assistance_requests_status_expires
+    - dropIndex:
+        tableName: assistance_requests
+        indexName: idx_assistance_requests_location
+    - dropIndex:
+        tableName: assistance_requests
+        indexName: idx_assistance_requests_author_status
+    - dropIndex:
+        tableName: assistance_offers
+        indexName: idx_assistance_offers_request_status
+    - dropIndex:
+        tableName: assistance_offers
+        indexName: idx_assistance_offers_helper_status
+    - dropIndex:
+        tableName: assistance_reviews
+        indexName: idx_assistance_reviews_reviewee_created
+    - dropIndex:
+        tableName: users
+        indexName: idx_users_ready_rating
+
+- changeSet:
+    id: remove-roadassistance-2
+    author: ai-assistant
+    comment: Удаление таблицы связи пользователей и компетенций
+    changes:
+    - dropTable:
+        tableName: user_competencies
+
+- changeSet:
+    id: remove-roadassistance-3
+    author: ai-assistant
+    comment: Удаление таблицы отзывов
+    changes:
+    - dropTable:
+        tableName: assistance_reviews
+
+- changeSet:
+    id: remove-roadassistance-4
+    author: ai-assistant
+    comment: Удаление таблицы предложений помощи
+    changes:
+    - dropTable:
+        tableName: assistance_offers
+
+- changeSet:
+    id: remove-roadassistance-5
+    author: ai-assistant
+    comment: Удаление таблицы запросов о помощи
+    changes:
+    - dropTable:
+        tableName: assistance_requests
+
+- changeSet:
+    id: remove-roadassistance-6
+    author: ai-assistant
+    comment: Удаление таблицы компетенций
+    changes:
+    - dropTable:
+        tableName: competencies
+
+- changeSet:
+    id: remove-roadassistance-7
+    author: ai-assistant
+    comment: Удаление таблицы типов помощи
+    changes:
+    - dropTable:
+        tableName: assistance_types
+
+- changeSet:
+    id: remove-roadassistance-8
+    author: ai-assistant
+    comment: Удаление полей в users для модуля помощи
+    changes:
+    - dropColumn:
+        tableName: users
+        columnName: ready_to_help
+    - dropColumn:
+        tableName: users
+        columnName: help_radius
+    - dropColumn:
+        tableName: users
+        columnName: rating
+    - dropColumn:
+        tableName: users
+        columnName: requires_moderation
+    - dropColumn:
+        tableName: users
+        columnName: is_blocked
